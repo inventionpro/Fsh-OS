@@ -21,7 +21,7 @@ consoleprint('Running tty');
   let args = [];
   eval(FS.get('/bin/tty.js'));
   try {
-  consoleprint('Starting fsh interpreter');
+    consoleprint('Starting fsh interpreter');
     let args = [];
     eval(FS.get('/bin/fsh.js'));
   } catch(err) {
@@ -29,6 +29,14 @@ consoleprint('Running tty');
   }
   consoleclear()
   consoleprint('Welcome');
+  // Start visual desktop
+  try {
+    consoleprint('Starting visual desktop');
+    let args = [];
+    eval(FS.get('/bin/desktop.js'));
+  } catch(err) {
+    consoleprint('Could not load desktop', true);
+  }
 } catch(err) {
   console.error('Fatal');
 }
