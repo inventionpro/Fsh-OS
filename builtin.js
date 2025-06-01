@@ -39,7 +39,7 @@ p.e {
 }
 </style>
 <code></code>
-<input>\`;
+<input autocapitalize="off" name="command">\`;
 window.consoleprint=(text, error)=>{
   if(error){console.error(text)}else{console.log(text)};
   document.querySelector('code').innerHTML += '<p'+(error?' class="e">':'>')+text.toString().replaceAll('<','&lt;')+'</p>';
