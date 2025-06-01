@@ -1,13 +1,17 @@
-import { tty, fsh, view } from './builtin.js';
+import { _desktop, tty, fsh, view, js, desktop } from './builtin.js';
 
 export class fs {
   constructor() {
     this.tree = {
-      home: {},
+      home: {
+        '_desktop.json': _desktop
+      },
       bin: {
         'tty.js': tty,
         'fsh.js': fsh,
-        'view.js': view
+        'view.js': view,
+        'js.js': js,
+        'dt.js': desktop
       }
     }
   }

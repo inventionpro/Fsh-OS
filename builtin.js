@@ -1,3 +1,12 @@
+// Other
+export const _desktop = `{
+  "background": {
+    "type": "color",
+    "value": "#181818" 
+  }
+}`;
+
+// Execs
 export const tty = `document.querySelector('#app').innerHTML = \`<style>
 body {
   cursor: text;
@@ -88,3 +97,28 @@ try {
 } catch(err) {
   window.consoleprint(err, true);
 }`;
+
+export const js = `if (!args[0]) {
+  window.consoleprint('Must pass path', true)
+}
+try {
+  eval(FS.get(args[0]));
+} catch(err) {
+  window.consoleprint(err, true);
+}`;
+
+export const desktop = `document.querySelector('#app').innerHTML = \`<style>
+body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0px;
+  color: #fff;
+  background: #000;
+  overflow: hidden;
+}
+</style>
+<div id="desktop"></div>\`;
+window.consoleprint = (t,e)=>{if(e){console.error(t)}else{console.log(t)}};
+window.consoleclear = ()=>{};
+document.body.onclick=()=>{};
+consoleprint('Loaded desktop');`;
