@@ -121,4 +121,16 @@ body {
 window.consoleprint = (t,e)=>{if(e){console.error(t)}else{console.log(t)}};
 window.consoleclear = ()=>{};
 document.body.onclick=()=>{};
+function setBackground() {
+  let bg = JSON.parse(FS.get('~/_desktop.json')).background;
+  switch (bg.type) {
+    case 'color':
+      if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) {
+        throw new Error('Invalid color');
+      }
+      document.getElementById('desktop').style.background = bg.value;
+      break;
+  }
+}
+setBackground();
 consoleprint('Loaded desktop');`;
