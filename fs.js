@@ -58,9 +58,9 @@ export class fs {
     return file;
   }
   get(path) {
-    return _nav(path, false);
+    return this._nav(path, false);
   }
   create(path) {
-    _nav(path, true);
+    this._nav(path, true);
   }
 }
