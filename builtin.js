@@ -81,7 +81,7 @@ export const fsh = `if (args.length) {
     try {
       eval(FS.get('/bin/'+cmd+'.js'))
     } catch(err) {
-      window.consoleprint(err, true);
+      window.consoleprint('Error executing fsh\n'+err, true);
     }
   }
   window.consoleprint('Sarted fsh interpreter')
@@ -200,7 +200,7 @@ export const js = `if (!args[0]) {
     if (Array.isArray(file)) throw new Error('Cannot be directory');
     eval(file);
   } catch(err) {
-    window.consoleprint(err, true);
+    window.consoleprint('Error executing js\n'+err, true);
   }
 }`;
 
