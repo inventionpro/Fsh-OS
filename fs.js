@@ -37,6 +37,10 @@ export class fs {
         if (!file.home) throw new Error('Missing directory/file: home from /home');
         file = file.home;
         break;
+      case '#':
+        if (!file.bin) throw new Error('Missing directory/file: bin from /bin');
+        file = file.bin;
+        break;
       default:
         throw new Error('Unknown fs start: '+seg[0]);
     }
