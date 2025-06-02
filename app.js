@@ -1,9 +1,3 @@
-/* Errors
--1xx File system
--100 Unknown start (eg t/path instead of /path)
--101 Missing directory or file
-*/
-
 // Iports and setup
 import { fs } from './fs.js';
 
@@ -17,7 +11,7 @@ const FS = new fs();
 window.FS = FS;
 consoleprint('File system setup finished');
 try {
-consoleprint('Running tty');
+  consoleprint('Running tty');
   let args = [];
   eval(FS.get('/bin/tty.js'));
   try {
@@ -30,13 +24,14 @@ consoleprint('Running tty');
   consoleclear()
   consoleprint('Welcome');
   // Start visual desktop
-  try {
+  /*try {
     consoleprint('Starting visual desktop');
     let args = [];
     eval(FS.get('/bin/desktop.js'));
   } catch(err) {
     consoleprint('Could not load desktop', true);
-  }
+  }*/
+  consoleprint('Run "js /bin/dt.js" to start experimental visual desktop');
 } catch(err) {
-  console.error('Fatal');
+  console.error('Fatal, cannot start tty');
 }
