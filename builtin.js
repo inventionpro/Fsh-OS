@@ -135,7 +135,7 @@ export const js = `if (!args[0]) {
 } else {
   try {
     let file = FS.get(args[0]);
-    if (Array.isArray(file)) thow new Error('Cannot be directory');
+    if (Array.isArray(file)) throw new Error('Cannot be directory');
     eval(file);
   } catch(err) {
     window.consoleprint(err, true);
@@ -160,7 +160,7 @@ export const edit = `if (!args[0]) {
 } else {
   try {
     let file = FS.get(args[0]);
-    if (Array.isArray(file)) thow new Error('Cannot be directory');
+    if (Array.isArray(file)) throw new Error('Cannot be directory');
   } catch(err) {
     if (err.includes('Missing directory/file')) {
       FS.create(args[0]);
