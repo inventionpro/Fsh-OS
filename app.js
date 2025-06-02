@@ -13,11 +13,11 @@ consoleprint('File system setup finished');
 try {
   consoleprint('Running tty');
   let args = [];
-  eval(FS.get('/bin/tty.js'));
+  eval(FS.get('#/tty.js'));
   try {
     consoleprint('Starting fsh interpreter');
     let args = [];
-    eval(FS.get('/bin/fsh.js'));
+    eval(FS.get('#/fsh.js'));
   } catch(err) {
     consoleprint('Could not load interpreter', true);
   }
@@ -27,11 +27,11 @@ try {
   /*try {
     consoleprint('Starting visual desktop');
     let args = [];
-    eval(FS.get('/bin/desktop.js'));
+    eval(FS.get('#/desktop.js'));
   } catch(err) {
     consoleprint('Could not load desktop', true);
   }*/
-  consoleprint('Run "js /bin/dt.js" to start experimental visual desktop');
+  consoleprint('Run "js #/dt.js" to start experimental visual desktop');
 } catch(err) {
   console.error('Fatal, cannot start tty');
 }
