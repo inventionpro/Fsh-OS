@@ -3,7 +3,8 @@ export const _desktop = `{
   "background": {
     "type": "color",
     "value": "#181818" 
-  }
+  },
+  "time": "%h:%m:%s"
 }`;
 
 // Critical
@@ -94,6 +95,8 @@ body, #app {
   margin: 0px;
   color: #fff;
   background: #000;
+  background-size: cover;
+  background-position: center;
   overflow: hidden;
 }
 #desktop {
@@ -103,18 +106,36 @@ body, #app {
 #bar {
   position: absolute;
   right: 0px;
-  bottom: 0px
+  bottom: 0px;
   left: 0px;
+  display: flex;
   width: 100vw;
   height: 5vh;
-  background: #0008;
+  background: #0004;
+  backdrop-filter: blur(10px);
+}
+#bar button {
+  cursor: pointer;
+  min-width: 5vh;
+  height: 5vh;
+  border: none;
+  background: #0000;
+  transition: 500ms;
+}
+#bar button:hover {
+  background: #0004;
 }
 </style>
 <div id="desktop"></div>
-<div id="bar"></div>\`;
+<div id="bar">
+  <button><img src="./media/logo.png"></button>
+  <span style="display:block;flex:1;"></span>
+  <button inert id="time"></button>
+</div>\`;
 window.consoleprint = (t,e)=>{if(e){console.error(t)}else{console.log(t)}};
 window.consoleclear = ()=>{};
 document.body.onclick=()=>{};
+/* Functions */
 function setBackground() {
   let bg = JSON.parse(FS.get('~/_desktop.json')).background;
   switch (bg.type) {
@@ -124,9 +145,27 @@ function setBackground() {
       }
       document.getElementById('app').style.background = bg.value;
       break;
+    case 'url':
+      if (!(/^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/m).test(bg.value)) {
+        throw new Error('Invalid url');
+      }
+      document.getElementById('app').style.background = 'url('+bg.value+')';
+      break;
   }
 }
-setBackground();
+function setTime() {
+  let time = JSON.parse(FS.get('~/_desktop.json')).time;
+  let date = new Date();
+  document.getElementById('time').innerText = time
+    .replaceAll('%h',date.getHours())
+    .replaceAll('%m',date.getMinutes())
+    .replaceAll('%s',date.getSeconds());
+}
+/* Updates */
+let interval = setInterval(()=>{
+  setBackground();
+  setTime();
+}, 400)
 consoleprint('Loaded desktop');`;
 
 // Commands
