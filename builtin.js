@@ -1,4 +1,4 @@
-// Other
+// Config
 export const _desktop = `{
   "background": {
     "type": "color",
@@ -6,7 +6,7 @@ export const _desktop = `{
   }
 }`;
 
-// Execs
+// Critical
 export const tty = `document.querySelector('#app').innerHTML = \`<style>
 body {
   cursor: text;
@@ -86,29 +86,9 @@ export const fsh = `if (args.length) {
   window.consoleprint('Sarted fsh interpreter')
 }`;
 
-export const view = `let v = '/';
-if (args[0]) v = args[0];
-try {
-  let ff = FS.get(v);
-  if (Array.isArray(ff)) {
-    ff = ff.map(f=>'| '+f).join('\\n');
-  }
-  window.consoleprint(ff);
-} catch(err) {
-  window.consoleprint(err, true);
-}`;
-
-export const js = `if (!args[0]) {
-  window.consoleprint('Must pass path', true)
-}
-try {
-  eval(FS.get(args[0]));
-} catch(err) {
-  window.consoleprint(err, true);
-}`;
-
 export const desktop = `document.querySelector('#app').innerHTML = \`<style>
-body {
+body, #app {
+  position: relative;
   width: 100vw;
   height: 100vh;
   margin: 0px;
@@ -116,8 +96,22 @@ body {
   background: #000;
   overflow: hidden;
 }
+#desktop {
+  width: 100vw;
+  height: 100vh;
+}
+#bar {
+  position: absolute;
+  right: 0px;
+  bottom: 0px
+  left: 0px;
+  width: 100vw;
+  height: 5vh;
+  background: #0008;
+}
 </style>
-<div id="desktop"></div>\`;
+<div id="desktop"></div>
+<div id="bar"></div>\`;
 window.consoleprint = (t,e)=>{if(e){console.error(t)}else{console.log(t)}};
 window.consoleclear = ()=>{};
 document.body.onclick=()=>{};
@@ -128,9 +122,53 @@ function setBackground() {
       if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) {
         throw new Error('Invalid color');
       }
-      document.getElementById('desktop').style.background = bg.value;
+      document.getElementById('app').style.background = bg.value;
       break;
   }
 }
 setBackground();
 consoleprint('Loaded desktop');`;
+
+// Commands
+export const js = `if (!args[0]) {
+  window.consoleprint('Must pass path', true);
+} else {
+  try {
+    let file = FS.get(args[0]);
+    if (Array.isArray(file)) thow new Error('Cannot be directory');
+    eval(file);
+  } catch(err) {
+    window.consoleprint(err, true);
+  }
+}`;
+
+export const view = `let v = '/';
+if (args[0]) v = args[0];
+try {
+  let ff = FS.get(v);
+  if (Array.isArray(ff)) {
+    ff = ff.map(f=>'| '+f).join('\\n');
+  }
+  window.consoleprint(v);
+  window.consoleprint(ff);
+} catch(err) {
+  window.consoleprint(err, true);
+}`;
+
+export const edit = `if (!args[0]) {
+  window.consoleprint('Must pass path', true);
+} else {
+  try {
+    let file = FS.get(args[0]);
+    if (Array.isArray(file)) thow new Error('Cannot be directory');
+  } catch(err) {
+    if (err.includes('Missing directory/file')) {
+      FS.create(args[0]);
+      file = ''
+    } else {
+      window.consoleprint(err, true);
+    }
+  }
+  file.split('\n').map((f,i)=>\`${i+1} ${f}\`);
+  window.consoleprint('Uhhh unfinished :D');
+}`;
