@@ -4,7 +4,7 @@ export const _desktop = `{
     "type": "color",
     "value": "#181818" 
   },
-  "time": "%h:%m:%s"
+  "time": "%k:%M:%S"
 }`;
 
 // Critical
@@ -118,12 +118,18 @@ body, #app {
   cursor: pointer;
   min-width: 5vh;
   height: 5vh;
+  color: #fff;
+  padding: 5px;
   border: none;
   background: #0000;
   transition: 500ms;
 }
 #bar button:hover {
   background: #0004;
+}
+#bar button img {
+  width: 100%;
+  height: 100%;
 }
 </style>
 <div id="desktop"></div>
@@ -157,10 +163,27 @@ function setTime() {
   let time = JSON.parse(FS.get('~/_desktop.json')).time;
   let date = new Date();
   document.getElementById('time').innerText = time
-    .replaceAll('%h',date.getHours())
-    .replaceAll('%m',date.getMinutes())
-    .replaceAll('%s',date.getSeconds());
+    .replaceAll('%H',date.getHours().toString().padStart(2, '0'))
+    .replaceAll('%k',date.getHours())
+    .replaceAll('%I',(date.getHours()?date.getHours()%12:12).toString().padStart(2, '0'))
+    .replaceAll('%l',(date.getHours()?date.getHours()%12:12))
+    .replaceAll('%p',date.getHours()>=12?'PM':'AM')
+    .replaceAll('%M',date.getMinutes().toString().padStart(2, '0'))
+    .replaceAll('%-M',date.getMinutes())
+    .replaceAll('%S',date.getSeconds().toString().padStart(2, '0'))
+    .replaceAll('%-S',date.getSeconds())
+    .replaceAll('%d',(date.getDay()+1).toString().padStart(2, '0'))
+    .replaceAll('%-d',date.getDay()+1)
+    .replaceAll('%m',(date.getMonth()+1).toString().padStart(2, '0'))
+    .replaceAll('%-m',date.getMonth()+1)
+    .replaceAll('%Y',date.getFullYear())
+    .replaceAll('%y',date.getFullYear()%100);
 }
+/*%k:%M             6:25
+%k:%M:%S          13:04:21
+%l:%M:%S %p       2:10:01 PM
+%l:%M:%S %d/%m/%Y 23:00:05 02/06/2025
+%H:%M %d/%m/%y    05:00 02/06/25*/
 /* Updates */
 let interval = setInterval(()=>{
   setBackground();
