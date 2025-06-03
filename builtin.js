@@ -4,6 +4,10 @@ export const _desktop = `{
     "type": "color",
     "value": "#181818" 
   },
+  "desktop": {
+    "rows": 9,
+    "columns": 15
+  },
   "time": "%k:%M:%S"
 }`;
 
@@ -95,13 +99,13 @@ body, #app {
   margin: 0px;
   color: #fff;
   background: #000;
-  background-size: cover;
-  background-position: center;
   overflow: hidden;
 }
 #desktop {
   width: 100vw;
-  height: 100vh;
+  height: 95vh;
+  display: grid;
+  gap: 10px;
 }
 #bar {
   position: absolute;
@@ -152,12 +156,19 @@ function setBackground() {
       document.getElementById('app').style.background = bg.value;
       break;
     case 'url':
-      if (!(new RegExp('^https?://(www\\.)?[-a-zA-Z0-9@:%\\._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$', 'm')).test(bg.value)) {
+      if (!(new RegExp('^https?://(www\\.)?[-a-zA-Z0-9@:%\\._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$', 'm')).test(bg.value)) {
         throw new Error('Invalid url');
       }
-      document.getElementById('app').style.background = 'url('+bg.value+')';
+      document.getElementById('app').style.background = 'url('+bg.value+') center / cover no-repeat';
       break;
   }
+}
+function setDesktop() {
+  let desk = document.getElementById('desktop');
+  let desktop = JSON.parse(FS.get('~/_desktop.json')).desktop;
+  desk.style.gridTemplateRows = 'repeat('+desktop.rows+', 1fr)';
+  desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
+  desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map(_=>\`<div class="cell"></div>\`).join('');
 }
 function setTime() {
   let time = JSON.parse(FS.get('~/_desktop.json')).time;
@@ -186,10 +197,11 @@ function setTime() {
 %l:%M:%S %d/%m/%Y 23:00:05 02/06/2025
 %H:%M %d/%m/%y    05:00 02/06/25*/
 /* Updates */
+setDesktop();
 let interval = setInterval(()=>{
   setBackground();
   setTime();
-}, 400)
+}, 400);
 consoleprint('Loaded desktop');`;
 
 // Commands
@@ -233,6 +245,7 @@ export const edit = `if (!args[0]) {
       window.consoleprint(err, true);
     }
   }
-  window.consoleprint(file.split(\`\n\`).map((f,i)=>\`\${i+1} \${f}\`));
+  let max = file.split(\`\n\`).length.toString().length;
+  window.consoleprint(file.split(\`\n\`).map((f,i)=>\`\${(i+1).toString().padStart(max, ' ')} \${f}\`).join(\`\n\`));
   window.consoleprint('Uhhh unfinished :D');
 }`;
