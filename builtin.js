@@ -152,7 +152,7 @@ function setBackground() {
       document.getElementById('app').style.background = bg.value;
       break;
     case 'url':
-      if (!(/^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/m).test(bg.value)) {
+      if (!(new RegExp('^https?://(www\\.)?[-a-zA-Z0-9@:%\\._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$', 'm')).test(bg.value)) {
         throw new Error('Invalid url');
       }
       document.getElementById('app').style.background = 'url('+bg.value+')';
@@ -168,6 +168,7 @@ function setTime() {
     .replaceAll('%I',(date.getHours()?date.getHours()%12:12).toString().padStart(2, '0'))
     .replaceAll('%l',(date.getHours()?date.getHours()%12:12))
     .replaceAll('%p',date.getHours()>=12?'PM':'AM')
+    .replaceAll('%P',date.getHours()>=12?'pm':'am')
     .replaceAll('%M',date.getMinutes().toString().padStart(2, '0'))
     .replaceAll('%-M',date.getMinutes())
     .replaceAll('%S',date.getSeconds().toString().padStart(2, '0'))
@@ -220,8 +221,9 @@ try {
 export const edit = `if (!args[0]) {
   window.consoleprint('Must pass path', true);
 } else {
+  let file = '';
   try {
-    let file = FS.get(args[0]);
+    file = FS.get(args[0]);
     if (Array.isArray(file)) throw new Error('Cannot be directory');
   } catch(err) {
     if (err.includes('Missing directory/file')) {
