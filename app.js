@@ -31,7 +31,7 @@ try {
   } catch(err) {
     consoleprint('Could not load desktop', true);
   }*/
-  consoleprint('Run "js #/dt.js" to start experimental visual desktop');
+  consoleprint('Run "dt" to start experimental visual desktop');
 } catch(err) {
   console.error('Fatal, cannot start tty');
 }

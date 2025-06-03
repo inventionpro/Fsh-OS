@@ -27,7 +27,7 @@ export class fs {
       }
     }
   }
-  _nav(path, create) {
+  _nav(path, create, set=false, content='') {
     let file = this.tree;
     let seg = path.split('/');
     switch(seg.shift()) {
@@ -45,6 +45,7 @@ export class fs {
         throw new Error('Unknown fs start: '+seg[0]);
     }
     if (seg.length===1&&seg[0]==='') seg.shift();
+    let parent, k = null;
     seg.forEach((s,i)=>{
       if (!file[s]) {
         if (create) {
@@ -53,9 +54,15 @@ export class fs {
           throw new Error('Missing directory/file: '+s+' from '+path);
         }
       }
+      parent = file;
+      k = s;
       file = file[s];
     });
     if (!file) throw new Error('Missing directory/file: '+seg.slice(-1)[0]+' from '+path);
+    if (set) {
+      parent[k] = content;
+      return;
+    }
     if (typeof file === 'object' && !Array.isArray(file)) {
       return Object.keys(file);
     }
@@ -66,5 +73,8 @@ export class fs {
   }
   create(path) {
     this._nav(path, true);
+  }
+  set(path, content) {
+    this._nav(path, false, true, content);
   }
 }
