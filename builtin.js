@@ -233,6 +233,6 @@ export const edit = `if (!args[0]) {
       window.consoleprint(err, true);
     }
   }
-  file.split(\`\n\`).map((f,i)=>\`\${i+1} \${f}\`);
+  window.consoleprint(file.split(\`\n\`).map((f,i)=>\`\${i+1} \${f}\`));
   window.consoleprint('Uhhh unfinished :D');
 }`;
