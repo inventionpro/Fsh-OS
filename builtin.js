@@ -72,19 +72,19 @@ export const fsh = `if (args.length) {
   try {
     window.fshrunhook(FS.get(args[0]));
   } catch(err) {
-    window.consoleprint(err, true);
+    window.consoleprint('Error executing fsh file\\n'+err, true);
   }
 } else {
   window.fshrunhook=(c)=>{
     let args = c.split(' ');
     let cmd = args.shift();
     try {
-      eval(FS.get('/bin/'+cmd+'.js'))
+      eval(FS.get('#/'+cmd+'.js'));
     } catch(err) {
-      window.consoleprint('Error executing fsh\\n'+err, true);
+      window.consoleprint(\`Error executing fsh\n\`+err, true);
     }
   }
-  window.consoleprint('Sarted fsh interpreter')
+  window.consoleprint('Sarted fsh interpreter');
 }`;
 
 export const desktop = `document.querySelector('#app').innerHTML = \`<style>
@@ -200,7 +200,7 @@ export const js = `if (!args[0]) {
     if (Array.isArray(file)) throw new Error('Cannot be directory');
     eval(file);
   } catch(err) {
-    window.consoleprint('Error executing js\n'+err, true);
+    window.consoleprint(\`Error executing js\n\`+err, true);
   }
 }`;
 
