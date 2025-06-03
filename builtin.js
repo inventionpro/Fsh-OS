@@ -81,7 +81,7 @@ export const fsh = `if (args.length) {
     try {
       eval(FS.get('/bin/'+cmd+'.js'))
     } catch(err) {
-      window.consoleprint('Error executing fsh\n'+err, true);
+      window.consoleprint('Error executing fsh\\n'+err, true);
     }
   }
   window.consoleprint('Sarted fsh interpreter')
