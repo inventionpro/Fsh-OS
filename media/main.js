@@ -23,14 +23,6 @@ try {
   }
   consoleclear()
   consoleprint('Welcome');
-  // Start visual desktop
-  /*try {
-    consoleprint('Starting visual desktop');
-    let args = [];
-    eval(FS.get('#/desktop.js'));
-  } catch(err) {
-    consoleprint('Could not load desktop', true);
-  }*/
   consoleprint('Run "dt" to start experimental visual desktop');
 } catch(err) {
   console.error('Fatal, cannot start tty');
