@@ -1,3 +1,6 @@
+import { default_apps } from './apps.js';
+window.apps = default_apps;
+
 // Config
 export const _desktop = `{
   "background": {
@@ -15,8 +18,8 @@ export const _desktop = `{
 export const tty = `document.querySelector('#app').innerHTML = \`<style>
 body {
   cursor: text;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   margin: 0px;
   color: #fff;
   background: #000;
@@ -29,7 +32,7 @@ p {
 #app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   padding: 5px;
   box-sizing: border-box;
 }
@@ -94,16 +97,16 @@ export const fsh = `if (args.length) {
 export const desktop = `document.querySelector('#app').innerHTML = \`<style>
 body, #app {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   margin: 0px;
   color: #fff;
   background: #000;
   overflow: hidden;
 }
 #desktop {
-  width: 100vw;
-  height: 95vh;
+  width: 100dvw;
+  height: 95dvh;
   display: grid;
   gap: 10px;
 }
@@ -113,15 +116,15 @@ body, #app {
   bottom: 0px;
   left: 0px;
   display: flex;
-  width: 100vw;
-  height: 5vh;
+  width: 100dvw;
+  height: 5dvh;
   background: #0004;
   backdrop-filter: blur(10px);
 }
 #bar button {
   cursor: pointer;
-  min-width: 5vh;
-  height: 5vh;
+  min-width: 5dvh;
+  height: 5dvh;
   color: #fff;
   padding: 5px;
   border: none;
@@ -146,6 +149,19 @@ window.consoleprint = (t,e)=>{if(e){console.error(t)}else{console.log(t)}};
 window.consoleclear = ()=>{};
 document.body.onclick=()=>{};
 /* Functions */
+function setDesktop() {
+  let desk = document.getElementById('desktop');
+  let desktop = JSON.parse(FS.get('~/_desktop.json')).desktop;
+  desk.style.gridTemplateRows = 'repeat('+desktop.rows+', 1fr)';
+  desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
+  desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map(_=>\`<div class="cell"></div>\`).join('');
+  window.apps.forEach(app=>{
+    document.querySelector('#desktop div.cell:not(:has(.app))').innerHTML = \`<div class="app" draggable="true">
+  <img src="\${app.icon??'./media/app/default.svg'}">
+  <span>\${app.name}</span>
+</div>\`;
+  })
+}
 function setBackground() {
   let bg = JSON.parse(FS.get('~/_desktop.json')).background;
   switch (bg.type) {
@@ -162,13 +178,6 @@ function setBackground() {
       document.getElementById('app').style.background = 'url('+bg.value+') center / cover no-repeat';
       break;
   }
-}
-function setDesktop() {
-  let desk = document.getElementById('desktop');
-  let desktop = JSON.parse(FS.get('~/_desktop.json')).desktop;
-  desk.style.gridTemplateRows = 'repeat('+desktop.rows+', 1fr)';
-  desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
-  desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map(_=>\`<div class="cell"></div>\`).join('');
 }
 function setTime() {
   let time = JSON.parse(FS.get('~/_desktop.json')).time;
