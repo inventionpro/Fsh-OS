@@ -8,7 +8,7 @@ export const _desktop = `{
     "value": "#181818" 
   },
   "desktop": {
-    "rows": 9,
+    "rows": 8,
     "columns": 15
   },
   "time": "%k:%M:%S"
@@ -102,6 +102,7 @@ body, #app {
   margin: 0px;
   color: #fff;
   background: #000;
+  font-family: Lexend, Arial;
   overflow: hidden;
 }
 #desktop {
@@ -138,6 +139,24 @@ body, #app {
   width: 100%;
   height: 100%;
 }
+.cell {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.app {
+  width: 100%;
+  height: 100%;
+}
+.app img {
+  display: block;
+  width: 100%;
+  height: calc(100% - 20px);
+  pointer-events: none;
+}
+.app span {
+  height: 20px;
+}
 </style>
 <div id="desktop"></div>
 <div id="bar">
@@ -160,7 +179,30 @@ function setDesktop() {
   <img src="\${app.icon??'./media/app/default.svg'}">
   <span>\${app.name}</span>
 </div>\`;
-  })
+  });
+  let grid = document.getElementById('desktop');
+  let draggedItem = null;
+  grid.addEventListener('dragstart', (e) => {
+    if (e.target.classList.contains('app')) {
+      draggedItem = e.target;
+      setTimeout(() => {
+        e.target.style.display = "none";
+      }, 0);
+    }
+  });
+  grid.addEventListener('dragend', (e) => {
+    if (draggedItem) {
+      draggedItem.style.display = "block";
+      draggedItem = null;
+    }
+  });
+  grid.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+  grid.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.target.classList.contains('cell') && draggedItem) e.target.append(draggedItem);
+  });
 }
 function setBackground() {
   let bg = JSON.parse(FS.get('~/_desktop.json')).background;
