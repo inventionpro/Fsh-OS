@@ -1,6 +1,6 @@
 export const files = {
     name: 'Files',
-    icon: null,
+    icon: './media/app/files.svg',
     html: ``
 };
 
