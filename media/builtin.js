@@ -109,7 +109,6 @@ body, #app {
   width: 100dvw;
   height: 95dvh;
   display: grid;
-  gap: 10px;
 }
 #bar {
   position: absolute;
@@ -155,7 +154,9 @@ body, #app {
   pointer-events: none;
 }
 .app span {
+  display: block;
   height: 20px;
+  text-align: center;
 }
 </style>
 <div id="desktop"></div>
