@@ -160,6 +160,25 @@ body, #app {
   height: 20px;
   text-align: center;
 }
+#app .application {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  display: flex;
+  flex-direction: column;
+  border: 2px #fff4 solid;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+#app .application .header {
+  flex: 1;
+  background: #fff4;
+  backdrop-filter: blur(10px);
+}
+#app .application iframe {
+  border: none;
+  background: var(--bg);
+}
 </style>
 <div id="desktop"></div>
 <div id="bar">
@@ -173,10 +192,22 @@ document.body.onclick=()=>{};
 /* Functions */
 window.openapps = [];
 function openApp(id) {
+  if(window.openapps.includes(id)) return;
   window.openapps.push(id);
-  let iframe = document.createElement('iframe');
-  document.getElementById('app').appendChild(iframe);
-  iframe.classList.add('application');
+  let app = document.createElement('div');
+  app.id = 'a-'+id;
+  document.getElementById('app').appendChild(app);
+  app.innerHTML = \`<div class="header">
+  <span>\${window.apps.find(a=>a.id===id).name}</span>
+  <span style="flex:1"></span>
+  <button onclick="closeapp('\${id}')">X</button>
+</div>
+<iframe></iframe>\`
+  app.classList.add('application');
+}
+window.closeapp = (id)=>{
+  document.getElementById('a-'+id).remove();
+  window.openapps = window.openapps.filter(a=>a!==id);
 }
 function setDesktop() {
   let desk = document.getElementById('desktop');
@@ -191,7 +222,7 @@ function setDesktop() {
 </div>\`;
     let icon = document.querySelector('.app.new');
     icon.classList.remove('new');
-    icon.onclick = openApp(app.id);
+    icon.onclick = ()=>{openApp(app.id)};
   });
   let grid = document.getElementById('desktop');
   let draggedItem = null;
@@ -225,12 +256,14 @@ function setBackground() {
         throw new Error('Invalid color');
       }
       document.getElementById('app').style.background = bg.value;
+      document.getElementById('app').style.setProperty('--bg', bg.value);
       break;
     case 'url':
       if (!(new RegExp('^https?://(www\\.)?[-a-zA-Z0-9@:%\\._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$', 'm')).test(bg.value)) {
         throw new Error('Invalid url');
       }
       document.getElementById('app').style.background = 'url('+bg.value+') center / cover no-repeat';
+      document.getElementById('app').style.setProperty('--bg', '#181818');
       break;
   }
 }
