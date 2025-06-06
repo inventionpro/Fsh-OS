@@ -162,21 +162,35 @@ body, #app {
 }
 #app .application {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 10px;
+  left: 70px;
   display: flex;
   flex-direction: column;
-  border: 2px #fff4 solid;
+  padding: 2px;
+  background: #fff4;
+  backdrop-filter: blur(10px);
   border-radius: 0.5rem;
   overflow: hidden;
 }
 #app .application .header {
   flex: 1;
-  background: #fff4;
-  backdrop-filter: blur(10px);
+  display: flex;
+  padding: 0px 2px;
+}
+#app .application .header button {
+  color: #fff;
+  text-shadow: 0px 0px 2px black;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  transition: background 250ms;
+}
+#app .application .header button:hover {
+  background: #d00;
 }
 #app .application iframe {
   border: none;
+  border-radius: 0.5rem;
   background: var(--bg);
 }
 </style>
