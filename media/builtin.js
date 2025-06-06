@@ -15,7 +15,8 @@ export const _desktop = `{
 }`;
 
 // Critical
-export const tty = `document.querySelector('#app').innerHTML = \`<style>
+export const tty = `if (window.interval) clearInterval(window.interval);
+document.querySelector('#app').innerHTML = \`<style>
 body {
   cursor: text;
   width: 100dvw;
@@ -65,7 +66,7 @@ window.consoleclear=(text)=>{
   Array.from(document.querySelectorAll('code p:not(.e)')).forEach(e=>e.remove());
 }
 let io = document.querySelector('input');
-document.body.onclick=()=>{io.select()};
+document.body.onclick=()=>{io.focus()};
 io.onkeyup=(evt)=>{
   if (evt.key==='Enter') {
     window.consoleprint('> '+io.value);
@@ -94,7 +95,8 @@ export const fsh = `if (args.length) {
   window.consoleprint('Sarted fsh interpreter');
 }`;
 
-export const desktop = `document.querySelector('#app').innerHTML = \`<style>
+export const desktop = `if (window.interval) clearInterval(window.interval);
+document.querySelector('#app').innerHTML = \`<style>
 body, #app {
   position: relative;
   width: 100dvw;
@@ -169,6 +171,13 @@ window.consoleprint = (t,e)=>{if(e){console.error(t)}else{console.log(t)}};
 window.consoleclear = ()=>{};
 document.body.onclick=()=>{};
 /* Functions */
+window.openapps = [];
+function openApp(id) {
+  window.openapps.push(id);
+  let iframe = document.createElement('iframe');
+  document.getElementById('app').appendChild(iframe);
+  iframe.classList.add('application');
+}
 function setDesktop() {
   let desk = document.getElementById('desktop');
   let desktop = JSON.parse(FS.get('~/_desktop.json')).desktop;
@@ -176,10 +185,13 @@ function setDesktop() {
   desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
   desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map(_=>\`<div class="cell"></div>\`).join('');
   window.apps.forEach(app=>{
-    document.querySelector('#desktop div.cell:not(:has(.app))').innerHTML = \`<div class="app" draggable="true">
+    document.querySelector('#desktop div.cell:not(:has(.app))').innerHTML = \`<div class="app new" draggable="true">
   <img src="\${app.icon??'./media/app/default.svg'}">
   <span>\${app.name}</span>
 </div>\`;
+    let icon = document.querySelector('.app.new');
+    icon.classList.remove('new');
+    icon.onclick = openApp(app.id);
   });
   let grid = document.getElementById('desktop');
   let draggedItem = null;
@@ -250,7 +262,7 @@ function setTime() {
 %H:%M %d/%m/%y    05:00 02/06/25*/
 /* Updates */
 setDesktop();
-let interval = setInterval(()=>{
+window.interval = setInterval(()=>{
   setBackground();
   setTime();
 }, 400);

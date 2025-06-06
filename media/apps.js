@@ -1,4 +1,5 @@
 export const files = {
+    id: 'files',
     name: 'Files',
     icon: './media/app/files.svg',
     html: ``
