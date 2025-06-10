@@ -162,17 +162,18 @@ body, #app {
 }
 #app .application {
   position: absolute;
-  top: 10px;
-  left: 70px;
+  top: 0px;
+  left: 0px;
   display: flex;
   flex-direction: column;
-  padding: 2px;
+  padding: 4px;
   background: #fff4;
   backdrop-filter: blur(10px);
   border-radius: 0.5rem;
   overflow: hidden;
 }
 #app .application .header {
+  cursor: default;
   flex: 1;
   display: flex;
   padding: 0px 2px;
@@ -210,14 +211,66 @@ function openApp(id) {
   window.openapps.push(id);
   let app = document.createElement('div');
   app.id = 'a-'+id;
+  app.classList.add('application');
   document.getElementById('app').appendChild(app);
   app.innerHTML = \`<div class="header">
   <span>\${window.apps.find(a=>a.id===id).name}</span>
   <span style="flex:1"></span>
   <button onclick="closeapp('\${id}')">X</button>
 </div>
-<iframe></iframe>\`
-  app.classList.add('application');
+<iframe></iframe>\`;
+  let bbb = app.getBoundingClientRect();
+  app.style.left = window.innerWidth/2 - bbb.width/2 + 'px';
+  app.style.top = window.innerHeight/2 - bbb.height/2 + 'px';
+  app.addEventListener('pointermove', (e) => {
+    const rect = app.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    let cursor = "default";
+    const left = x < 10;
+    const right = x > rect.width - 10;
+    const top = y < 10;
+    const bottom = y > rect.height - 10;
+    if (top && left) {
+      cursor = "nwse";
+    } else if (top && right) {
+      cursor = "nesw";
+    } else if (bottom && left) {
+      cursor = "nesw";
+    } else if (bottom && right) {
+      cursor = "nwse";
+    } else if (left) {
+      cursor = "ew";
+    } else if (right) {
+      cursor = "ew";
+    } else if (top) {
+      cursor = "ns";
+    } else if (bottom) {
+      cursor = "ns";
+    }
+    app.style.cursor = cursor+'-resize';
+  });
+  let header = app.querySelector('.header');
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+  header.onpointerdown = (e)=>{
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onpointerup = ()=>{
+      document.onpointereup = null;
+      document.onpointermove = null;
+    };
+    document.onpointermove = (e)=>{
+      e.preventDefault();
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      app.style.top = (app.offsetTop - pos2) + 'px';
+      app.style.left = (app.offsetLeft - pos1) + 'px';
+    };
+  };
 }
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
