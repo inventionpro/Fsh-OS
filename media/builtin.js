@@ -202,7 +202,6 @@ body, #app {
 #app .application iframe {
   border: none;
   border-radius: 0.5rem;
-  background: var(--bg);
 }
 </style>
 <div id="desktop"></div>
