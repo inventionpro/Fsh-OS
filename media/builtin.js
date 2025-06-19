@@ -176,6 +176,8 @@ body, #app {
   left: 0px;
   display: flex;
   flex-direction: column;
+  width: 400px;
+  height: 250px;
   padding: 4px;
   background: #fff4;
   backdrop-filter: blur(10px);
@@ -200,6 +202,8 @@ body, #app {
   background: #d00;
 }
 #app .application iframe {
+  width: 100%;
+  height: 100%;
   border: none;
   border-radius: 0.5rem;
 }
