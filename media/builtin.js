@@ -71,11 +71,17 @@ window.consoleclear=(text)=>{
 }
 let io = document.querySelector('input');
 document.body.onclick=()=>{io.focus()};
+let last = '';
 io.onkeyup=(evt)=>{
-  if (evt.key==='Enter') {
+  if (evt.key === 'Enter') {
     window.consoleprint('> '+io.value);
     window.fshrunhook(io.value);
+    last = io.value;
     io.value = '';
+  } else if (evt.key === 'ArrowUp') {
+    if (io.value === '') {
+      io.value = last;
+    }
   }
 }
 consoleprint('Running tty mode');`;
@@ -294,7 +300,7 @@ function setDesktop() {
   desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map((_,i)=>\`<div class="cell" n="\${i}"></div>\`).join('');
   desktop.apps.forEach(ae=>{
     let app = JSON.parse(FS.get('#/apps/'+ae.id+'.app'));
-    document.querySelector('#desktop div.cell[n="'+(ae.x+ae.y*desktop.rows)+'"]').innerHTML = \`<div class="app new" draggable="true">
+    document.querySelector('#desktop div.cell[n="'+(ae.x+ae.y*desktop.columns)+'"]').innerHTML = \`<div class="app new" draggable="true">
   <img src="\${app.icon??'./media/app/default.svg'}">
   <span>\${app.name}</span>
 </div>\`;
