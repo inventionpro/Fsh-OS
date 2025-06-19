@@ -18,8 +18,6 @@ const files = {
         color: #ddd;
         font-family: Lexend, Arial, sans-serif;
         margin: 0px;
-      }
-      #path, #folders {
         background-color: #0004;
       }
       .h {
@@ -44,7 +42,8 @@ const files = {
         flex: 1;
         display: flex;
         flex-direction: column;
-        background-color: #0008;
+        border-top-left-radius: 0.5rem;
+        background-color: #0004;
         overflow: hidden;
       }
       #main button {
