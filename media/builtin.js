@@ -285,8 +285,8 @@ function openApp(id) {
   };
   // Inner
   let iframe = app.querySelector('iframe');
-  iframe.setAttribute('srcdoc', info.html);
   iframe.contentWindow.FS = window.FS;
+  iframe.setAttribute('srcdoc', info.html);
 }
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
