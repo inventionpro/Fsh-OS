@@ -212,7 +212,7 @@ document.body.onclick=()=>{};
 window.openapps = [];
 function openApp(id) {
   if(window.openapps.includes(id)) return;
-  let info = JSON.parse(FS.get('#/apps/'+id));
+  let info = JSON.parse(FS.get('#/apps/'+id+'.app'));
   window.openapps.push(id);
   let app = document.createElement('div');
   app.id = 'a-'+id;
@@ -293,7 +293,7 @@ function setDesktop() {
   desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
   desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map((_,i)=>\`<div class="cell" n="\${i}"></div>\`).join('');
   desktop.apps.forEach(ae=>{
-    let app = JSON.parse(FS.get('#/apps/'+ae.id));
+    let app = JSON.parse(FS.get('#/apps/'+ae.id+'.app'));
     document.querySelector('#desktop div.cell[n="'+(ae.x+ae.y*desktop.rows)+'"]').innerHTML = \`<div class="app new" draggable="true">
   <img src="\${app.icon??'./media/app/default.svg'}">
   <span>\${app.name}</span>
