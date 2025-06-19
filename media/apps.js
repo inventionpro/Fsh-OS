@@ -15,9 +15,12 @@ const files = {
         flex-direction: column;
         width: 100vw;
         height: 100vh;
-        color: white;
+        color: #ddd;
         font-family: Lexend, Arial, sans-serif;
         margin: 0px;
+      }
+      #path, #folders {
+        background-color: #0004;
       }
       .h {
         display: flex;
@@ -31,11 +34,16 @@ const files = {
       :not(#folders) > details {
         padding-left: 10px;
       }
+      #folders button {
+        cursor: pointer;
+        color: #ddd;
+        border: none;
+        background-color: transparent;
+      }
       #main {
-       flex: 1;
+        flex: 1;
         display: flex;
         flex-direction: column;
-        border-radius: 0.5rem;
         background-color: #0008;
         overflow: hidden;
       }
@@ -49,7 +57,7 @@ const files = {
         transition: 250ms;
       }
       #main button:hover {
-        background-color: #0008;
+        background-color: #0004;
       }
     </style>
   </head>
@@ -61,22 +69,22 @@ const files = {
     </div>
     <script>
       const FS = window.parent.FS;
-      let current = '/';
+      let current = '';
       function showTop() {
-        document.getElementById('path').innerText = current;
+        document.getElementById('path').innerText = (current.length?'':'/') + current;
       }
       showTop();
-      function traverse(o, n) {
-        return '<details><summary><button>' + n + '</button></summary>' + Object.keys(o).map(p=>{
-          if (!p.includes('.')) {
-            return traverse(o[p], p);
-          }
-          return '';
-        }).join('') + '</details>';
+      function traverse(o, n, l) {
+        let inner = Object.keys(o).map(p=>{
+          if (p.includes('.')) return '';
+          return traverse(o[p], p, l+'/'+p);
+        }).join('');
+        if (inner.length<1) return '<button onclick="current=' + (l.length?l:'/') + '">' + n + '</button>';
+        return '<details><summary><button onclick="current=' + (l.length?l:'/') + '">' + n + '</button></summary>' + inner + '</details>';
       }
-      document.getElementById('folders').innerHTML = traverse(FS.tree, '/');
+      document.getElementById('folders').innerHTML = traverse(FS.tree, '/', '');
       function showContents() {
-        document.getElementById('main').innerHTML = FS.get(current).map(f=>'<button'+(f.includes('.')?'':' onclick="current+=\`'+f+'\`;showTop();showContents();"')+'>'+f+'</button>').join('');
+        document.getElementById('main').innerHTML = FS.get(current).map(f=>'<button'+(f.includes('.')?'':' onclick="current+=\`/'+f+'\`;showTop();showContents();"')+'>'+f+'</button>').join('');
       }
       showContents();
     </script>
