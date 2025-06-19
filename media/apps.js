@@ -79,8 +79,8 @@ const files = {
           if (p.includes('.')) return '';
           return traverse(o[p], p, l+'/'+p);
         }).join('');
-        if (inner.length<1) return '<button onclick="current=' + (l.length?l:'/') + '">' + n + '</button>';
-        return '<details><summary><button onclick="current=' + (l.length?l:'/') + '">' + n + '</button></summary>' + inner + '</details>';
+        if (inner.length<1) return '<button onclick="current=\`' + (l.length?l:'/') + '\`">' + n + '</button>';
+        return '<details><summary><button onclick="current=\`' + (l.length?l:'/') + '\`">' + n + '</button></summary>' + inner + '</details>';
       }
       document.getElementById('folders').innerHTML = traverse(FS.tree, '/', '');
       function showContents() {
