@@ -285,7 +285,6 @@ function openApp(id) {
   };
   // Inner
   let iframe = app.querySelector('iframe');
-  iframe.contentWindow.FS = window.FS;
   iframe.setAttribute('srcdoc', info.html);
 }
 window.closeapp = (id)=>{
