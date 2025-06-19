@@ -11,12 +11,30 @@ const files = {
   <head>
     <style>
       body {
-        background: red;
+        width: 100vw;
+        height: 100vh;
+        color: white;
+        font-family: Lexend, Arial, sans-serif;
+        margin: 0px;
       }
     </style>
   </head>
   <body>
-    <p>HH</p>
+    <div id="path"></div>
+    <div>
+      <div id="folders"></div>
+      <div id="main"></div>
+    </div>
+    <script>
+      function traverse(path) {
+        let obj = {};
+        FS.get(path).filter(f=>!f.includes('.')).forEach(p=>{
+          obj[p] = traverse(path+'/'+p);
+        });
+        return obj;
+      }
+      console.log(traverse(''));
+    </script>
   </body>
 </html>`
 };
