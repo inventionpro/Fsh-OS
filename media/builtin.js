@@ -286,6 +286,7 @@ function openApp(id) {
   // Inner
   let iframe = app.querySelector('iframe');
   iframe.setAttribute('srcdoc', info.html);
+  iframe.contentWindow.FS = window.FS;
 }
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
