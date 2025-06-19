@@ -384,6 +384,8 @@ function setTime() {
 */
 /* Updates */
 setDesktop();
+setBackground();
+setTime();
 window.interval = setInterval(()=>{
   setBackground();
   setTime();
