@@ -25,7 +25,7 @@ const files = {
       <div id="folders"></div>
       <div id="main"></div>
     </div>
-    <script>
+    <script defer>
       function traverse(path) {
         let obj = {};
         FS.get(path).filter(f=>!f.includes('.')).forEach(p=>{
