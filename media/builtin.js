@@ -1,6 +1,3 @@
-import { default_apps } from './apps.js';
-window.apps = default_apps;
-
 // Config
 export const _desktop = `{
   "background": {
@@ -9,7 +6,14 @@ export const _desktop = `{
   },
   "desktop": {
     "rows": 8,
-    "columns": 15
+    "columns": 15,
+    "apps": [
+      {
+        "id": "files",
+        "x": 0,
+        "y": 0
+      }
+    ]
   },
   "time": "%k:%M:%S"
 }`;
@@ -208,20 +212,23 @@ document.body.onclick=()=>{};
 window.openapps = [];
 function openApp(id) {
   if(window.openapps.includes(id)) return;
+  let info = JSON.parse(FS.get('#/apps/'+id));
   window.openapps.push(id);
   let app = document.createElement('div');
   app.id = 'a-'+id;
   app.classList.add('application');
   document.getElementById('app').appendChild(app);
   app.innerHTML = \`<div class="header">
-  <span>\${window.apps.find(a=>a.id===id).name}</span>
+  <span>\${info.name}</span>
   <span style="flex:1"></span>
   <button onclick="closeapp('\${id}')">X</button>
 </div>
 <iframe></iframe>\`;
+  // Size + Position
   let bbb = app.getBoundingClientRect();
   app.style.left = window.innerWidth/2 - bbb.width/2 + 'px';
   app.style.top = window.innerHeight/2 - bbb.height/2 + 'px';
+  // Resize
   app.addEventListener('pointermove', (e) => {
     const rect = app.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -250,9 +257,9 @@ function openApp(id) {
     }
     app.style.cursor = cursor+'-resize';
   });
+  // Move
   let header = app.querySelector('.header');
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-
   header.onpointerdown = (e)=>{
     e.preventDefault();
     pos3 = e.clientX;
@@ -271,6 +278,9 @@ function openApp(id) {
       app.style.left = (app.offsetLeft - pos1) + 'px';
     };
   };
+  // Inner
+  let iframe = app.querySelector('iframe');
+  iframe.setAttribute('srcdoc', info.html);
 }
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
@@ -281,9 +291,10 @@ function setDesktop() {
   let desktop = JSON.parse(FS.get('~/_desktop.json')).desktop;
   desk.style.gridTemplateRows = 'repeat('+desktop.rows+', 1fr)';
   desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
-  desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map(_=>\`<div class="cell"></div>\`).join('');
-  window.apps.forEach(app=>{
-    document.querySelector('#desktop div.cell:not(:has(.app))').innerHTML = \`<div class="app new" draggable="true">
+  desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map((_,i)=>\`<div class="cell" n="\${i}"></div>\`).join('');
+  desktop.apps.forEach(ae=>{
+    let app = JSON.parse(FS.get('#/apps/'+ae.id));
+    document.querySelector('#desktop div.cell[n="'+(ae.x+ae.y*desktop.rows)+'"]').innerHTML = \`<div class="app new" draggable="true">
   <img src="\${app.icon??'./media/app/default.svg'}">
   <span>\${app.name}</span>
 </div>\`;
@@ -355,11 +366,13 @@ function setTime() {
     .replaceAll('%Y',date.getFullYear())
     .replaceAll('%y',date.getFullYear()%100);
 }
-/*%k:%M             6:25
+/*
+%k:%M             6:25
 %k:%M:%S          13:04:21
 %l:%M:%S %p       2:10:01 PM
 %l:%M:%S %d/%m/%Y 23:00:05 02/06/2025
-%H:%M %d/%m/%y    05:00 02/06/25*/
+%H:%M %d/%m/%y    05:00 02/06/25
+*/
 /* Updates */
 setDesktop();
 window.interval = setInterval(()=>{
