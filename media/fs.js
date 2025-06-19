@@ -10,6 +10,7 @@ import {
   view,
   edit
 } from './builtin.js';
+import { default_apps } from './apps.js';
 
 export class fs {
   constructor() {
@@ -18,6 +19,7 @@ export class fs {
         '_desktop.json': _desktop
       },
       bin: {
+        apps: default_apps,
         'tty.js': tty,
         'fsh.js': fsh,
         'dt.js': desktop,
