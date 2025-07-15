@@ -356,7 +356,7 @@ function setDesktop() {
   };
   document.querySelector('#search input').oninput = function(evt){
     if (!apps) {
-      apps = FS.get('#/apps).map(app=>JSON.parse(FS.get('#/apps/'+ae.id+'.app')));
+      apps = FS.get('#/apps').map(app=>JSON.parse(FS.get('#/apps/'+ae.id+'.app')));
     }
     let query = evt.target.value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
