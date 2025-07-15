@@ -346,7 +346,7 @@ function setDesktop() {
   // Search
   let apps;
   document.addEventListener('click', function(evt) {
-    const div = document.getElementById('search');
+    const div = document.getElementById('bar');
     if (!div?.contains(evt.target)) {
       div.style.display = 'none';
     }
