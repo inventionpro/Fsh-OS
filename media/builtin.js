@@ -2,7 +2,7 @@
 export const _desktop = `{
   "background": {
     "type": "color",
-    "value": "#181818" 
+    "value": "#181818"
   },
   "desktop": {
     "rows": 8,
@@ -361,7 +361,7 @@ function setDesktop() {
     let query = evt.target.value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
       .filter(app=>app.name.toLowerCase().includes(query))
-      .map(app=>'<button onclick="openApp(\''+app.id+'\')">'+app.name+'</button>');
+      .map(app=>'<button onclick="openApp(\\''+app.id+'\\')">'+app.name+'</button>');
   };
   // Grid
   let grid = document.getElementById('desktop');
