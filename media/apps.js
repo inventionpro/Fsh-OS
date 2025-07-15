@@ -91,6 +91,35 @@ const files = {
 </html>`
 };
 
+const notepad = {
+  id: 'notepad',
+  name: 'Notepad',
+  icon: './media/app/notepad.svg',
+  html: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        overflow: hidden;
+      }
+      textarea {
+        width: 100%;
+        height: 100%;
+        resize: none;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea></textarea>
+    <script>
+      const FS = window.parent.FS;
+    </script>
+  </body>
+</html>`
+};
+
 export let default_apps = {
-  'files.app': $(files)
+  'files.app': $(files),
+  'notepad.app': $(notepad)
 };
