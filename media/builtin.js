@@ -12,6 +12,11 @@ export const _desktop = `{
         "id": "files",
         "x": 0,
         "y": 0
+      },
+      {
+        "id": "notepad",
+        "x": 0,
+        "y": 1
       }
     ]
   },
@@ -150,6 +155,29 @@ body, #app {
   width: 100%;
   height: 100%;
 }
+#search {
+  position: absolute;
+  bottom: 5dvh;
+  left: 0px;
+  width: 20dvw;
+  height: 30dvh;
+  padding: 10px;
+  border-radius: 0 1rem 0 0;
+  background: #0004;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+}
+#search input {
+  width: 100%;
+  min-width: 0px;
+  color: #fff;
+  margin: 0px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 0.5rem;
+  background: #fff1;
+  box-sizing: border-box;
+}
 .cell {
   width: 100%;
   height: 100%;
@@ -210,7 +238,11 @@ body, #app {
 </style>
 <div id="desktop"></div>
 <div id="bar">
-  <button><img src="./media/logo.png"></button>
+  <div id="search" style="display:none">
+    <input placeholder="Search..." name="app-search">
+    <div></div>
+  </div>
+  <button id="logo"><img src="./media/logo.png"></button>
   <span style="display:block;flex:1;"></span>
   <button inert id="time"></button>
 </div>\`;
@@ -311,6 +343,27 @@ function setDesktop() {
     icon.classList.remove('new');
     icon.onclick = ()=>{openApp(app.id)};
   });
+  // Search
+  let apps;
+  document.addEventListener('click', function(evt) {
+    const div = document.getElementById('search');
+    if (!div?.contains(evt.target)) {
+      div.style.display = 'none';
+    }
+  });
+  document.getElementById('logo').onclick = function(){
+    document.getElementById('search').style.display = '';
+  };
+  document.querySelector('#search input').oninput = function(evt){
+    if (!apps) {
+      apps = FS.get('#/apps).map(app=>JSON.parse(FS.get('#/apps/'+ae.id+'.app')));
+    }
+    let query = evt.target.value.toLowerCase();
+    document.querySelector('#search div').innerHTML = apps
+      .filter(app=>app.name.toLowerCase().includes(query))
+      .map(app=>'<button onclick="openApp(\''+app.id+'\')">'+app.name+'</button>');
+  };
+  // Grid
   let grid = document.getElementById('desktop');
   let draggedItem = null;
   grid.addEventListener('dragstart', (e) => {
