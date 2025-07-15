@@ -334,7 +334,7 @@ function setDesktop() {
   desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
   desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map((_,i)=>\`<div class="cell" n="\${i}"></div>\`).join('');
   desktop.apps.forEach(ae=>{
-    let app = JSON.parse(FS.get('#/apps/'+app.id+'.app'));
+    let app = JSON.parse(FS.get('#/apps/'+ae.id+'.app'));
     document.querySelector('#desktop div.cell[n="'+(ae.x+ae.y*desktop.columns)+'"]').innerHTML = \`<div class="app new" draggable="true">
   <img src="\${app.icon??'./media/app/default.svg'}">
   <span>\${app.name}</span>
@@ -356,7 +356,7 @@ function setDesktop() {
   };
   document.querySelector('#search input').oninput = function(evt){
     if (!apps) {
-      apps = FS.get('#/apps').map(app=>JSON.parse(FS.get('#/apps/'+ae.id+'.app')));
+      apps = FS.get('#/apps').map(app=>JSON.parse(FS.get('#/apps/'+app.id+'.app')));
     }
     let query = evt.target.value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
