@@ -138,7 +138,7 @@ body, #app {
   background: #0004;
   backdrop-filter: blur(10px);
 }
-#bar button {
+#bar > button {
   cursor: pointer;
   min-width: 5dvh;
   height: 5dvh;
@@ -148,10 +148,10 @@ body, #app {
   background: #0000;
   transition: 500ms;
 }
-#bar button:hover {
+#bar > button:hover {
   background: #0004;
 }
-#bar button img {
+#bar > button img {
   width: 100%;
   height: 100%;
 }
@@ -177,6 +177,24 @@ body, #app {
   border-radius: 0.5rem;
   background: #fff1;
   box-sizing: border-box;
+}
+#search div {
+  display: flex;
+  flex-direction: column;
+}
+#search button {
+  cursor: pointer;
+  text-align: left;
+  color: #ddd;
+  margin: 2px 0px;
+  padding: 5px;
+  border: none;
+  border-radius: 0.5rem;
+  background: none;
+  transition: background 250ms;
+}
+#search button:hover {
+  background: #0008;
 }
 .cell {
   width: 100%;
@@ -323,6 +341,7 @@ function openApp(id) {
   let iframe = app.querySelector('iframe');
   iframe.setAttribute('srcdoc', info.html);
 }
+window.openApp = openApp;
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
   window.openapps = window.openapps.filter(a=>a!==id);
@@ -361,7 +380,8 @@ function setDesktop() {
     let query = evt.target.value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
       .filter(app=>app.name.toLowerCase().includes(query))
-      .map(app=>'<button onclick="openApp(\\''+app.id+'\\')">'+app.name+'</button>');
+      .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\')">'+app.name+'</button>')
+      .join('');
   };
   // Grid
   let grid = document.getElementById('desktop');
