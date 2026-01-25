@@ -2,8 +2,8 @@ import {
   // Config
   _desktop,
   // Critical
-  tty,
   fsh,
+  tty,
   desktop,
   // Commands
   js,
@@ -59,7 +59,7 @@ export class fs {
     if (seg.length===1&&seg[0]==='') seg.shift();
     let parent, k = null;
     seg.forEach((s,i)=>{
-      if (!file[s]) {
+      if (typeof file[s]==='undefined') {
         if (create) {
           file[s] = (s.includes('.')&&seg.length-1===i)?'':{};
         } else {

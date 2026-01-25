@@ -130,7 +130,6 @@ const terminal = {
   <head>
     <style>
       body {
-        display: flex;
         width: 100dvw;
         height: 100dvh;
         margin: 0px;
@@ -138,12 +137,12 @@ const terminal = {
         background-color: #000c;
       }
       span {
-        flex: 1;
+        display: flex;
+        flex-direction: column;
         white-space: break-spaces;
         overflow: hidden auto;
       }
       input {
-        flex-shrink: 0;
         width: 100%;
         border: none;
         outline: none;
@@ -177,7 +176,9 @@ const terminal = {
       let last = '';
       io.onkeyup=(evt)=>{
         if (evt.key === 'Enter') {
+          io.value = io.value.trim();
           window.consoleprint('> '+io.value);
+          if (io.value==='') return;
           window.fshrunhook(io.value);
           last = io.value;
           io.value = '';
