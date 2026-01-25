@@ -512,6 +512,7 @@ export const edit = `if (!args[0]) {
   window.consoleprint('Must pass path', true);
 } else {
   let file = '';
+  let run = true;
   try {
     file = FS.get(args[0]);
     if (Array.isArray(file)) throw new Error('Cannot be directory');
@@ -521,12 +522,14 @@ export const edit = `if (!args[0]) {
       file = ''
     } else {
       window.consoleprint(err.message, true);
-      return;
+      run = false;
     }
   }
-  let max = file.split(\`\n\`).length.toString().length;
-  window.consoleprint(file.split(\`\n\`).map((f,i)=>\`\${(i+1).toString().padStart(max, ' ')} \${f}\`).join(\`\n\`));
-  window.consoleprint('Uhhh unfinished :D');
+  if (run) {
+    let max = file.split(\`\n\`).length.toString().length;
+    window.consoleprint(file.split(\`\n\`).map((f,i)=>\`\${(i+1).toString().padStart(max, ' ')} \${f}\`).join(\`\n\`));
+    window.consoleprint('Uhhh unfinished :D');
+  }
 }`;
 
 export const move = `if (!args[0] || !args[1]) {
