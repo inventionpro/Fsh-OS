@@ -24,6 +24,25 @@ export const _desktop = `{
 }`;
 
 // Critical
+export const fsh = `if (args.length) {
+  try {
+    window.fshrunhook(FS.get(args[0]));
+  } catch(err) {
+    window.consoleprint('Error executing fsh file\\n'+err, true);
+  }
+} else {
+  window.fshrunhook=(c)=>{
+    let args = c.split(' ');
+    let cmd = args.shift();
+    try {
+      eval(FS.get('#/'+cmd+'.js'));
+    } catch(err) {
+      window.consoleprint(\`Error executing fsh\n\`+err, true);
+    }
+  }
+  window.consoleprint('Sarted fsh interpreter');
+}`;
+
 export const tty = `if (window.interval) clearInterval(window.interval);
 document.querySelector('#app').innerHTML = \`<style>
 body {
@@ -79,7 +98,9 @@ document.body.onclick=()=>{io.focus()};
 let last = '';
 io.onkeyup=(evt)=>{
   if (evt.key === 'Enter') {
+    io.value = io.value.trim();
     window.consoleprint('> '+io.value);
+    if (io.value==='') return;
     window.fshrunhook(io.value);
     last = io.value;
     io.value = '';
@@ -88,25 +109,6 @@ io.onkeyup=(evt)=>{
   }
 }
 consoleprint('Running tty mode');`;
-
-export const fsh = `if (args.length) {
-  try {
-    window.fshrunhook(FS.get(args[0]));
-  } catch(err) {
-    window.consoleprint('Error executing fsh file\\n'+err, true);
-  }
-} else {
-  window.fshrunhook=(c)=>{
-    let args = c.split(' ');
-    let cmd = args.shift();
-    try {
-      eval(FS.get('#/'+cmd+'.js'));
-    } catch(err) {
-      window.consoleprint(\`Error executing fsh\n\`+err, true);
-    }
-  }
-  window.consoleprint('Sarted fsh interpreter');
-}`;
 
 export const desktop = `if (window.interval) clearInterval(window.interval);
 document.querySelector('#app').innerHTML = \`<style>
@@ -213,6 +215,8 @@ body, #app {
   display: block;
   height: 20px;
   text-align: center;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 #app .application {
   position: absolute;
@@ -365,7 +369,7 @@ function setDesktop() {
   document.addEventListener('click', (evt)=>{
     const div = document.getElementById('bar');
     if (!div?.contains(evt.target)) {
-      div.querySelector('#search').style.display = 'none';
+      document.getElementById('search').style.display = 'none';
     }
   });
   document.getElementById('logo').onclick = ()=>{
@@ -376,10 +380,10 @@ function setDesktop() {
     let query = evt.target.value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
       .filter(app=>app.name.toLowerCase().includes(query))
-      .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\')">'+app.name+'</button>')
+      .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\');document.getElementById('search').style.display='none'">'+app.name+'</button>')
       .join('');
   };
-  document.querySelector('#search input').oninput;
+  document.querySelector('#search input').oninput();
   // Grid
   let grid = document.getElementById('desktop');
   let draggedItem = null;
@@ -512,11 +516,12 @@ export const edit = `if (!args[0]) {
     file = FS.get(args[0]);
     if (Array.isArray(file)) throw new Error('Cannot be directory');
   } catch(err) {
-    if (err.includes('Missing directory/file')) {
+    if (err.message.includes('Missing directory/file')) {
       FS.create(args[0]);
       file = ''
     } else {
-      window.consoleprint(err, true);
+      window.consoleprint(err.message, true);
+      return;
     }
   }
   let max = file.split(\`\n\`).length.toString().length;
