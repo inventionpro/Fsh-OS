@@ -13,14 +13,16 @@ const files = {
       body {
         display: flex;
         flex-direction: column;
-        width: 100vw;
-        height: 100vh;
+        width: 100dvw;
+        height: 100dvh;
         color: #ddd;
         font-family: Lexend, Arial, sans-serif;
         margin: 0px;
         background-color: #0004;
+        overflow: hidden;
       }
       .h {
+        height: 100%;
         display: flex;
         flex: 1;
       }
@@ -40,11 +42,12 @@ const files = {
       }
       #main {
         flex: 1;
+        height: 100%;
         display: flex;
         flex-direction: column;
         border-top-left-radius: 0.5rem;
         background-color: #0004;
-        overflow: hidden;
+        overflow: hidden auto;
       }
       #main button {
         cursor: pointer;
@@ -82,8 +85,11 @@ const files = {
         return '<details><summary><button onclick="current=\`' + (l.length?l:'/') + '\`;showTop();showContents();">' + n + '</button></summary>' + inner + '</details>';
       }
       document.getElementById('folders').innerHTML = traverse(FS.tree, '/', '');
+      function viewFile(file) {
+        window.top.openApp('notepad');
+      }
       function showContents() {
-        document.getElementById('main').innerHTML = FS.get(current).map(f=>'<button'+(f.includes('.')?'':' onclick="current+=\`/'+f+'\`;showTop();showContents();"')+'>'+f+'</button>').join('');
+        document.getElementById('main').innerHTML = FS.get(current).map(f=>'<button onclick="'+(f.includes('.')?'viewFile(current+\`/'+f+'\`)':'current+=\`/'+f+'\`;showTop();showContents()')+'">'+f+'</button>').join('');
       }
       showContents();
     </script>
@@ -136,14 +142,18 @@ const terminal = {
         overflow: hidden;
         background-color: #000c;
       }
+      body > span {
+        max-height: calc(100% - 20px);
+        overflow: hidden auto;
+      }
       span {
         display: flex;
         flex-direction: column;
         white-space: break-spaces;
-        overflow: hidden auto;
       }
       input {
         width: 100%;
+        height: 20px;
         border: none;
         outline: none;
         background: transparent;
@@ -167,6 +177,7 @@ const terminal = {
       window.top.consoleprint=(text, error)=>{
         if(error){console.error(text)}else{console.log(text)};
         document.querySelector('span').innerHTML += '<span'+(error?' class="err">':'>')+text.toString().replaceAll('<','&lt;')+'</span>';
+        document.querySelector('span').scrollTop = document.querySelector('span').scrollHeight;
       }
       window.top.consoleclear=(text)=>{
         Array.from(document.querySelectorAll('span span:not(.e)')).forEach(e=>e.remove());
