@@ -380,7 +380,7 @@ function setDesktop() {
     let query = evt.target.value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
       .filter(app=>app.name.toLowerCase().includes(query))
-      .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\');document.getElementById('search').style.display='none'">'+app.name+'</button>')
+      .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\');document.getElementById('search').style.display=\\'none\\'">'+app.name+'</button>')
       .join('');
   };
   document.querySelector('#search input').oninput();
