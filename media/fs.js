@@ -8,7 +8,11 @@ import {
   // Commands
   js,
   view,
-  edit
+  make,
+  edit,
+  move,
+  del,
+  clear
 } from './builtin.js';
 import { default_apps } from './apps.js';
 
@@ -21,15 +25,21 @@ export class fs {
       bin: {
         apps: default_apps,
         'tty.js': tty,
-        'fsh.js': fsh,
         'dt.js': desktop,
+
+        'fsh.js': fsh,
         'js.js': js,
+
+        'clear.js': clear,
         'view.js': view,
-        'edit.js': edit
+        'make.js': make,
+        'edit.js': edit,
+        'move.js': move,
+        'del.js': del
       }
     }
   }
-  _nav(path, create, set=false, content='') {
+  _nav(path, create, secondary='', content='') {
     let file = this.tree;
     let seg = path.split('/');
     switch(seg.shift()) {
@@ -61,8 +71,11 @@ export class fs {
       file = file[s];
     });
     if (!file) throw new Error('Missing directory/file: '+seg.slice(-1)[0]+' from '+path);
-    if (set) {
+    if (secondary==='set') {
       parent[k] = content;
+      return;
+    } else if (secondary==='del') {
+      delete parent[k];
       return;
     }
     if (typeof file === 'object' && !Array.isArray(file)) {
@@ -73,10 +86,13 @@ export class fs {
   get(path) {
     return this._nav(path, false);
   }
+  set(path, content) {
+    this._nav(path, false, 'set', content);
+  }
   create(path) {
     this._nav(path, true);
   }
-  set(path, content) {
-    this._nav(path, false, true, content);
+  delete(path) {
+    this._nav(path, false, 'del');
   }
 }

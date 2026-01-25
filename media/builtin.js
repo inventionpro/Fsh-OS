@@ -61,7 +61,7 @@ code, input {
   margin: 0px;
   padding: 0px;
 }
-p.e {
+p.err {
   color: #d66;
 }
 </style>
@@ -69,7 +69,7 @@ p.e {
 <input autocapitalize="off" name="command">\`;
 window.consoleprint=(text, error)=>{
   if(error){console.error(text)}else{console.log(text)};
-  document.querySelector('code').innerHTML += '<p'+(error?' class="e">':'>')+text.toString().replaceAll('<','&lt;')+'</p>';
+  document.querySelector('code').innerHTML += '<p'+(error?' class="err">':'>')+text.toString().replaceAll('<','&lt;')+'</p>';
 }
 window.consoleclear=(text)=>{
   Array.from(document.querySelectorAll('code p:not(.e)')).forEach(e=>e.remove());
@@ -84,9 +84,7 @@ io.onkeyup=(evt)=>{
     last = io.value;
     io.value = '';
   } else if (evt.key === 'ArrowUp') {
-    if (io.value === '') {
-      io.value = last;
-    }
+    if (io.value === '') io.value = last;
   }
 }
 consoleprint('Running tty mode');`;
@@ -364,25 +362,24 @@ function setDesktop() {
   });
   // Search
   let apps;
-  document.addEventListener('click', function(evt) {
+  document.addEventListener('click', (evt)=>{
     const div = document.getElementById('bar');
     if (!div?.contains(evt.target)) {
       div.querySelector('#search').style.display = 'none';
     }
   });
-  document.getElementById('logo').onclick = function(){
+  document.getElementById('logo').onclick = ()=>{
     document.getElementById('search').style.display = '';
   };
-  document.querySelector('#search input').oninput = function(evt){
-    if (!apps) {
-      apps = FS.get('#/apps').map(app=>JSON.parse(FS.get('#/apps/'+app)));
-    }
+  document.querySelector('#search input').oninput = (evt)=>{
+    if (!apps) apps = FS.get('#/apps').map(app=>JSON.parse(FS.get('#/apps/'+app)));
     let query = evt.target.value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
       .filter(app=>app.name.toLowerCase().includes(query))
       .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\')">'+app.name+'</button>')
       .join('');
   };
+  document.querySelector('#search input').oninput;
   // Grid
   let grid = document.getElementById('desktop');
   let draggedItem = null;
@@ -491,6 +488,22 @@ try {
   window.consoleprint(err, true);
 }`;
 
+export const make = `if (!args[0]) {
+  window.consoleprint('Must pass path', true);
+} else {
+  try {
+    let v = args[0].split('/');
+    let f;
+    if (v.slice(-1)[0].includes('.')) f = v.pop();
+    v = v.join('/');
+    FS.create(v);
+    if (f) FS.set(v+'/'+f,'');
+    window.consoleprint('created '+args[0]);
+  } catch(err) {
+    window.consoleprint(err, true);
+  }
+}`;
+
 export const edit = `if (!args[0]) {
   window.consoleprint('Must pass path', true);
 } else {
@@ -510,3 +523,29 @@ export const edit = `if (!args[0]) {
   window.consoleprint(file.split(\`\n\`).map((f,i)=>\`\${(i+1).toString().padStart(max, ' ')} \${f}\`).join(\`\n\`));
   window.consoleprint('Uhhh unfinished :D');
 }`;
+
+export const move = `if (!args[0] || !args[1]) {
+  window.consoleprint('Must pass two paths', true);
+} else {
+  try {
+    let one = FS.get(args[0]);
+    let two = FS.get(args[1]);
+    if (!Array.isArray(two)) window.consoleprint('Destination must be a folder', true);
+    window.consoleprint('Uhhh unfinished :D');
+  } catch(err) {
+    window.consoleprint(err, true);
+  }
+}`;
+
+export const del = `if (!args[0]) {
+  window.consoleprint('Must pass path', true);
+} else {
+  try {
+    FS.delete(args[0]);
+    window.consoleprint('deleted '+args[0]);
+  } catch(err) {
+    window.consoleprint(err, true);
+  }
+}`;
+
+export const clear = 'window.consoleclear()';
