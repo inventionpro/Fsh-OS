@@ -121,7 +121,77 @@ const notepad = {
 </html>`
 };
 
+const terminal = {
+  id: 'terminal',
+  name: 'Terminal',
+  icon: './media/app/terminal.svg',
+  html: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      body {
+        display: flex;
+        width: 100dvw;
+        height: 100dvh;
+        margin: 0px;
+        overflow: hidden;
+        background-color: #000c;
+      }
+      span {
+        flex: 1;
+        white-space: break-spaces;
+        overflow: hidden auto;
+      }
+      input {
+        flex-shrink: 0;
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+      }
+      span, input {
+        font-size: 14px;
+        font-family: monospace;
+        color: #ddd;
+        margin: 0px;
+        padding: 0px;
+      }
+      span.err {
+        color: #d66;
+      }
+    </style>
+  </head>
+  <body>
+    <span></span>
+    <input autocapitalize="off" name="command">
+    <script>
+      window.consoleprint=(text, error)=>{
+        if(error){console.error(text)}else{console.log(text)};
+        document.querySelector('span').innerHTML += '<span'+(error?' class="err">':'>')+text.toString().replaceAll('<','&lt;')+'</span>';
+      }
+      window.consoleclear=(text)=>{
+        Array.from(document.querySelectorAll('span span:not(.e)')).forEach(e=>e.remove());
+      }
+      let io = document.querySelector('input');
+      document.body.onclick=()=>{io.focus()};
+      let last = '';
+      io.onkeyup=(evt)=>{
+        if (evt.key === 'Enter') {
+          window.consoleprint('> '+io.value);
+          window.fshrunhook(io.value);
+          last = io.value;
+          io.value = '';
+        } else if (evt.key === 'ArrowUp') {
+          if (io.value === '') io.value = last;
+        }
+      }
+    </script>
+  </body>
+</html>`
+};
+
 export let default_apps = {
   'files.app': $(files),
-  'notepad.app': $(notepad)
+  'notepad.app': $(notepad),
+  'terminal.app': $(terminal)
 };
