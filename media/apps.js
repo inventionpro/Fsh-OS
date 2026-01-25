@@ -67,7 +67,7 @@ const files = {
       <div id="main"></div>
     </div>
     <script>
-      const FS = window.parent.FS;
+      const FS = window.top.FS;
       let current = '';
       function showTop() {
         document.getElementById('path').innerText = (current.length?'':'/') + current;
@@ -115,7 +115,7 @@ const notepad = {
   <body>
     <textarea></textarea>
     <script>
-      const FS = window.parent.FS;
+      const FS = window.top.FS;
     </script>
   </body>
 </html>`
@@ -164,11 +164,11 @@ const terminal = {
     <span></span>
     <input autocapitalize="off" name="command">
     <script>
-      window.consoleprint=(text, error)=>{
+      window.top.consoleprint=(text, error)=>{
         if(error){console.error(text)}else{console.log(text)};
         document.querySelector('span').innerHTML += '<span'+(error?' class="err">':'>')+text.toString().replaceAll('<','&lt;')+'</span>';
       }
-      window.consoleclear=(text)=>{
+      window.top.consoleclear=(text)=>{
         Array.from(document.querySelectorAll('span span:not(.e)')).forEach(e=>e.remove());
       }
       let io = document.querySelector('input');
@@ -177,9 +177,9 @@ const terminal = {
       io.onkeyup=(evt)=>{
         if (evt.key === 'Enter') {
           io.value = io.value.trim();
-          window.consoleprint('> '+io.value);
+          window.top.consoleprint('> '+io.value);
           if (io.value==='') return;
-          window.fshrunhook(io.value);
+          window.top.fshrunhook(io.value);
           last = io.value;
           io.value = '';
         } else if (evt.key === 'ArrowUp') {
