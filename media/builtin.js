@@ -231,12 +231,16 @@ body, #app {
   backdrop-filter: blur(10px);
   border-radius: 0.5rem;
   overflow: hidden;
+  box-shadow: 0px 0px 2px black;
 }
 #app .application .header {
   cursor: default;
   flex: 1;
   display: flex;
   padding: 0px 2px;
+}
+#app .application .header span {
+  text-shadow: 0px 0px 2px black;
 }
 #app .application .header button {
   color: #fff;
@@ -271,18 +275,20 @@ window.consoleclear = ()=>{};
 document.body.onclick=()=>{};
 /* Functions */
 window.openapps = [];
+window.topAppZ = 0;
 function openApp(id) {
-  if(window.openapps.includes(id)) return;
+  let processid = Math.floor(Math.random()*0xFFFFFF).toString(16);
   let info = JSON.parse(FS.get('#/apps/'+id+'.app'));
-  window.openapps.push(id);
+  window.openapps.push(processid);
   let app = document.createElement('div');
-  app.id = 'a-'+id;
+  app.id = 'a-'+processid;
   app.classList.add('application');
+  app.style.zIndex = ++window.topAppZ;
   document.getElementById('app').appendChild(app);
   app.innerHTML = \`<div class="header">
   <span>\${info.name}</span>
   <span style="flex:1"></span>
-  <button onclick="closeapp('\${id}')">X</button>
+  <button onclick="closeapp('\${processid}')">X</button>
 </div>
 <iframe></iframe>\`;
   // Size + Position
@@ -322,10 +328,13 @@ function openApp(id) {
   let header = app.querySelector('.header');
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
   header.onpointerdown = (e)=>{
-    e.preventDefault();
+    if (e.target.tagName==='BUTTON') return;
+    app.style.zIndex = ++window.topAppZ;
+    header.setPointerCapture(e.pointerId);
     pos3 = e.clientX;
     pos4 = e.clientY;
     document.onpointerup = ()=>{
+      header.releasePointerCapture(e.pointerId);
       document.onpointereup = null;
       document.onpointermove = null;
     };
@@ -368,16 +377,14 @@ function setDesktop() {
   let apps;
   document.addEventListener('click', (evt)=>{
     const div = document.getElementById('bar');
-    if (!div?.contains(evt.target)) {
-      document.getElementById('search').style.display = 'none';
-    }
+    if (!div?.contains(evt.target)) document.getElementById('search').style.display = 'none';
   });
   document.getElementById('logo').onclick = ()=>{
     document.getElementById('search').style.display = '';
   };
   document.querySelector('#search input').oninput = (evt)=>{
     if (!apps) apps = FS.get('#/apps').map(app=>JSON.parse(FS.get('#/apps/'+app)));
-    let query = evt.target.value.toLowerCase();
+    let query = document.querySelector('#search input').value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
       .filter(app=>app.name.toLowerCase().includes(query))
       .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\');document.getElementById(\\'search\\').style.display=\\'none\\'">'+app.name+'</button>')
@@ -464,7 +471,7 @@ window.interval = setInterval(()=>{
   setBackground();
   setTime();
 }, 400);
-consoleprint('Loaded desktop');`;
+window.consoleprint('Loaded desktop');`;
 
 // Commands
 export const js = `if (!args[0]) {
