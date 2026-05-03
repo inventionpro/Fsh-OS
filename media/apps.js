@@ -18,7 +18,6 @@ const files = {
         color: #ddd;
         font-family: Lexend, Arial, sans-serif;
         margin: 0px;
-        background-color: #0004;
         overflow: hidden;
       }
       .h {
@@ -81,12 +80,12 @@ const files = {
           if (p.includes('.')) return '';
           return traverse(o[p], p, l+'/'+p);
         }).join('');
-        if (inner.length<1) return '<button onclick="current=\`' + (l.length?l:'/') + '\`;showTop();showContents();">' + n + '</button>';
-        return '<details><summary><button onclick="current=\`' + (l.length?l:'/') + '\`;showTop();showContents();">' + n + '</button></summary>' + inner + '</details>';
+        if (inner.length<1) return '<button onclick="current=\`' + (l.length?l:'') + '\`;showTop();showContents();">' + n + '</button>';
+        return '<details><summary><button onclick="current=\`' + (l.length?l:'') + '\`;showTop();showContents();">' + n + '</button></summary>' + inner + '</details>';
       }
       document.getElementById('folders').innerHTML = traverse(FS.tree, '/', '');
       function viewFile(file) {
-        window.top.openApp('notepad');
+        window.top.openApp('notepad', { file });
       }
       function showContents() {
         document.getElementById('main').innerHTML = FS.get(current).map(f=>'<button onclick="'+(f.includes('.')?'viewFile(current+\`/'+f+'\`)':'current+=\`/'+f+'\`;showTop();showContents()')+'">'+f+'</button>').join('');
@@ -106,23 +105,64 @@ const notepad = {
   <head>
     <style>
       body {
+        display: flex;
+        flex-direction: column;
         width: 100dvw;
         height: 100dvh;
         margin: 0px;
         overflow: hidden;
       }
       textarea {
-        width: 100%;
-        height: 100%;
+        flex: 1;
         resize: none;
         outline: none;
+      }
+      body, textarea {
+        font-family: Lexend, Arial;
+        color: white;
+        border-radius: 0.5rem;
+        background: none;
+      }
+      span {
+        font-size: 85%;
+        color: #bbb;
+      }
+      button {
+        font-family: inherit;
+        color: inherit;
+        margin: 2px;
+        border: none;
+        border-radius: 0.25rem;
+        background-color: #fff4;
       }
     </style>
   </head>
   <body>
+    <span>New File</span>
     <textarea></textarea>
+    <div>
+      <button>Save</button>
+    </div>
     <script>
       const FS = window.top.FS;
+      let file;
+      if (window.startAttributes&&window.startAttributes.file) {
+        file = window.startAttributes.file;
+        document.querySelector('span').innerText = file;
+        document.querySelector('textarea').value = FS.get(file);
+      }
+      document.querySelector('button').onclick = ()=>{
+        if (!file) {
+          file = prompt('File path');
+          document.querySelector('span').innerText = file;
+        }
+        try {
+          FS.get(file)
+        } catch(err) {
+          FS.create(file);
+        }
+        FS.set(file, document.querySelector('textarea').value);
+      };
     </script>
   </body>
 </html>`

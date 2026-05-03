@@ -70,7 +70,7 @@ export class fs {
       k = s;
       file = file[s];
     });
-    if (!file) throw new Error('Missing directory/file: '+seg.slice(-1)[0]+' from '+path);
+    if (typeof file==='undefined') throw new Error('Missing directory/file: '+seg.slice(-1)[0]+' from '+path);
     if (secondary==='set') {
       parent[k] = content;
       return;
