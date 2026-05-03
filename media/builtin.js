@@ -490,6 +490,39 @@ export const js = `if (!args[0]) {
   }
 }`;
 
+export const clear = 'window.consoleclear()';
+
+export const tree = `if (!args[0]) {
+  window.consoleprint('Select option, save/load', true);
+} else {
+  if (args[0]==='save') {
+    let a = document.createElement('a');
+    a.href = 'data:application/json,'+encodeURIComponent(JSON.stringify(FS.tree));
+    a.download = 'fshos-'+Date.now()+'.json';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } else if (args[0]==='load') {
+    let file = document.createElement('input');
+    file.type = 'file';
+    file.accept = 'application/json';
+    file.style.display = 'none';
+    document.body.appendChild(file);
+    file.onchange = ()=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        FS.tree = JSON.parse(reader.result);
+        file.remove();
+      };
+      reader.readAsText(file.files[0], 'UTF-8');
+    };
+    file.click();
+  } else {
+    window.consoleprint('Unknown option, save/load', true);
+  }
+}`;
+
 export const view = `let v = '/';
 if (args[0]) v = args[0];
 try {
@@ -507,12 +540,7 @@ export const make = `if (!args[0]) {
   window.consoleprint('Must pass path', true);
 } else {
   try {
-    let v = args[0].split('/');
-    let f;
-    if (v.slice(-1)[0].includes('.')) f = v.pop();
-    v = v.join('/');
-    FS.create(v);
-    if (f) FS.set(v+'/'+f,'');
+    FS.create(args[0]);
     window.consoleprint('created '+args[0]);
   } catch(err) {
     window.consoleprint(err, true);
@@ -550,7 +578,14 @@ export const move = `if (!args[0] || !args[1]) {
     let one = FS.get(args[0]);
     let two = FS.get(args[1]);
     if (!Array.isArray(two)) window.consoleprint('Destination must be a folder', true);
-    window.consoleprint('Uhhh unfinished :D');
+    if (Array.isArray(one)) {
+      window.consoleprint('Uhhh, moving folders unfinished :D');
+    } else {
+      FS.create(args[1]+'/'+args[0].split('/').slice(-1)[0]);
+      FS.set(args[1]+'/'+args[0].split('/').slice(-1)[0], one);
+      FS.delete(args[0]);
+      window.consoleprint('Moved '+args[0]+' to '+args[1]);
+    }
   } catch(err) {
     window.consoleprint(err, true);
   }
@@ -566,5 +601,3 @@ export const del = `if (!args[0]) {
     window.consoleprint(err, true);
   }
 }`;
-
-export const clear = 'window.consoleclear()';
