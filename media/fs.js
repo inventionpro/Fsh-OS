@@ -1,18 +1,19 @@
 import {
-  // Config
-  _desktop,
   // Critical
   fsh,
   tty,
-  desktop,
+  // Config
+  _desktop,
   // Commands
+  desktop,
   js,
+  clear,
   view,
+  tree,
   make,
   edit,
   move,
-  del,
-  clear
+  del
 } from './builtin.js';
 import { default_apps } from './apps.js';
 
@@ -31,6 +32,8 @@ export class fs {
         'js.js': js,
 
         'clear.js': clear,
+        'tree.js': tree,
+
         'view.js': view,
         'make.js': make,
         'edit.js': edit,
