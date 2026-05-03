@@ -21,7 +21,7 @@ const files = {
         overflow: hidden;
       }
       .h {
-        height: 100%;
+        height: 0px;
         display: flex;
         flex: 1;
       }
