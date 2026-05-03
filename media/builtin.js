@@ -137,6 +137,7 @@ body, #app {
   height: 5dvh;
   background: #0004;
   backdrop-filter: blur(10px);
+  z-index: 9999999999999;
 }
 #bar > button {
   cursor: pointer;
@@ -163,7 +164,7 @@ body, #app {
   height: 30dvh;
   padding: 10px;
   border-radius: 0 1rem 0 0;
-  background: #0004;
+  background: #0006;
   backdrop-filter: blur(10px);
   box-sizing: border-box;
 }
@@ -276,7 +277,7 @@ document.body.onclick=()=>{};
 /* Functions */
 window.openapps = [];
 window.topAppZ = 0;
-function openApp(id) {
+function openApp(id, attributes={}) {
   let processid = Math.floor(Math.random()*0xFFFFFF).toString(16);
   let info = JSON.parse(FS.get('#/apps/'+id+'.app'));
   window.openapps.push(processid);
@@ -329,7 +330,7 @@ function openApp(id) {
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
   header.onpointerdown = (e)=>{
     if (e.target.tagName==='BUTTON') return;
-    app.style.zIndex = ++window.topAppZ;
+    if (window.topAppZ!=app.style.zIndex) app.style.zIndex = ++window.topAppZ;
     header.setPointerCapture(e.pointerId);
     pos3 = e.clientX;
     pos4 = e.clientY;
@@ -350,7 +351,10 @@ function openApp(id) {
   };
   // Inner
   let iframe = app.querySelector('iframe');
-  iframe.setAttribute('srcdoc', info.html);
+  let prepend = \`<script>
+  window.startAttributes = \${JSON.stringify(attributes||{})};
+</script>\`;
+  iframe.setAttribute('srcdoc', prepend+info.html);
 }
 window.openApp = openApp;
 window.closeapp = (id)=>{
