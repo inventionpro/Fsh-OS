@@ -44,7 +44,7 @@ const files = {
         height: 100%;
         display: flex;
         flex-direction: column;
-        border-top-left-radius: 0.5rem;
+        border-radius: 0.5rem;
         background-color: #0004;
         overflow: hidden auto;
       }

@@ -1,28 +1,3 @@
-// Config
-export const _desktop = `{
-  "background": {
-    "type": "color",
-    "value": "#181818"
-  },
-  "desktop": {
-    "rows": 8,
-    "columns": 15,
-    "apps": [
-      {
-        "id": "files",
-        "x": 0,
-        "y": 0
-      },
-      {
-        "id": "notepad",
-        "x": 0,
-        "y": 1
-      }
-    ]
-  },
-  "time": "%k:%M:%S"
-}`;
-
 // Critical
 export const fsh = `if (args.length) {
   try {
@@ -110,6 +85,32 @@ io.onkeyup=(evt)=>{
 }
 consoleprint('Running tty mode');`;
 
+// Config
+export const _desktop = `{
+  "background": {
+    "type": "color",
+    "value": "#181818"
+  },
+  "desktop": {
+    "rows": 8,
+    "columns": 15,
+    "apps": [
+      {
+        "id": "files",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "id": "notepad",
+        "x": 0,
+        "y": 1
+      }
+    ]
+  },
+  "time": "%k:%M:%S\n%d/%m/%Y"
+}`;
+
+// Commands
 export const desktop = `if (window.interval) clearInterval(window.interval);
 document.querySelector('#app').innerHTML = \`<style>
 body, #app {
@@ -197,6 +198,22 @@ body, #app {
 #search button:hover {
   background: #0008;
 }
+#open-apps {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  height: 100%;
+}
+#open-apps button {
+  cursor: pointer;
+  height: 80%;
+  padding: 0px;
+  border: none;
+  background: none;
+}
+#open-apps img {
+  height: 100%;
+}
 .cell {
   width: 100%;
   height: 100%;
@@ -268,6 +285,7 @@ body, #app {
     <div></div>
   </div>
   <button id="logo"><img src="./media/logo.png"></button>
+  <div id="open-apps"></div>
   <span style="display:block;flex:1;"></span>
   <button inert id="time"></button>
 </div>\`;
@@ -280,7 +298,8 @@ window.topAppZ = 0;
 function openApp(id, attributes={}) {
   let processid = Math.floor(Math.random()*0xFFFFFF).toString(16);
   let info = JSON.parse(FS.get('#/apps/'+id+'.app'));
-  window.openapps.push(processid);
+  window.openapps.push({ pid: processid, app: id });
+  showOpenApps();
   let app = document.createElement('div');
   app.id = 'a-'+processid;
   app.classList.add('application');
@@ -359,7 +378,8 @@ function openApp(id, attributes={}) {
 window.openApp = openApp;
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
-  window.openapps = window.openapps.filter(a=>a!==id);
+  window.openapps = window.openapps.filter(app=>app.pid!==id);
+  showOpenApps();
 }
 function setDesktop() {
   let desk = document.getElementById('desktop');
@@ -420,6 +440,11 @@ function setDesktop() {
     if (e.target.classList.contains('cell') && draggedItem) e.target.append(draggedItem);
   });
 }
+function showOpenApps() {
+  let apps = new Set();
+  window.openapps.forEach(app=>apps.add(app.app));
+  document.getElementById('open-apps').innerHTML = Array.from(apps).map(app=>\`<button onclick="document.getElementById('a-\${window.openapps.find(ap=>ap.app===app).pid}').style.zIndex=++window.topAppZ"><img src="\${JSON.parse(FS.tree.bin.apps[app+'.app']).icon}"></button>\`).join('');
+}
 function setBackground() {
   let bg = JSON.parse(FS.get('~/_desktop.json')).background;
   switch (bg.type) {
@@ -477,7 +502,6 @@ window.interval = setInterval(()=>{
 }, 400);
 window.consoleprint('Loaded desktop');`;
 
-// Commands
 export const js = `if (!args[0]) {
   window.consoleprint('Must pass path', true);
 } else {
