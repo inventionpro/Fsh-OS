@@ -107,7 +107,7 @@ export const _desktop = `{
       }
     ]
   },
-  "time": "%k:%M:%S\n%d/%m/%Y"
+  "time": "%k:%M:%S\\n%d/%m/%Y"
 }`;
 
 // Commands
@@ -295,11 +295,11 @@ document.body.onclick=()=>{};
 /* Functions */
 window.openapps = [];
 window.topAppZ = 0;
-function openApp(id, attributes={}) {
+window.openApp = (id, attributes={})=>{
   let processid = Math.floor(Math.random()*0xFFFFFF).toString(16);
   let info = JSON.parse(FS.get('#/apps/'+id+'.app'));
   window.openapps.push({ pid: processid, app: id });
-  showOpenApps();
+  window.showOpenApps();
   let app = document.createElement('div');
   app.id = 'a-'+processid;
   app.classList.add('application');
@@ -375,13 +375,12 @@ function openApp(id, attributes={}) {
 </script>\`;
   iframe.setAttribute('srcdoc', prepend+info.html);
 }
-window.openApp = openApp;
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
   window.openapps = window.openapps.filter(app=>app.pid!==id);
-  showOpenApps();
+  window.showOpenApps();
 }
-function setDesktop() {
+window.setDesktop = ()=>{
   let desk = document.getElementById('desktop');
   let desktop = JSON.parse(FS.get('~/_desktop.json')).desktop;
   desk.style.gridTemplateRows = 'repeat('+desktop.rows+', 1fr)';
@@ -395,7 +394,7 @@ function setDesktop() {
 </div>\`;
     let icon = document.querySelector('.app.new');
     icon.classList.remove('new');
-    icon.onclick = ()=>{openApp(app.id)};
+    icon.onclick = ()=>{window.openApp(app.id)};
   });
   // Search
   let apps;
@@ -440,12 +439,12 @@ function setDesktop() {
     if (e.target.classList.contains('cell') && draggedItem) e.target.append(draggedItem);
   });
 }
-function showOpenApps() {
+window.showOpenApps = ()=>{
   let apps = new Set();
   window.openapps.forEach(app=>apps.add(app.app));
   document.getElementById('open-apps').innerHTML = Array.from(apps).map(app=>\`<button onclick="document.getElementById('a-\${window.openapps.find(ap=>ap.app===app).pid}').style.zIndex=++window.topAppZ"><img src="\${JSON.parse(FS.tree.bin.apps[app+'.app']).icon}"></button>\`).join('');
 }
-function setBackground() {
+window.setBackground = ()=>{
   let bg = JSON.parse(FS.get('~/_desktop.json')).background;
   switch (bg.type) {
     case 'color':
@@ -464,7 +463,7 @@ function setBackground() {
       break;
   }
 }
-function setTime() {
+window.setTime = ()=>{
   let time = JSON.parse(FS.get('~/_desktop.json')).time;
   let date = new Date();
   document.getElementById('time').innerText = time
@@ -493,12 +492,12 @@ function setTime() {
 %H:%M %d/%m/%y    05:00 02/06/25
 */
 /* Updates */
-setDesktop();
-setBackground();
-setTime();
+window.setDesktop();
+window.setBackground();
+window.setTime();
 window.interval = setInterval(()=>{
-  setBackground();
-  setTime();
+  window.setBackground();
+  window.setTime();
 }, 400);
 window.consoleprint('Loaded desktop');`;
 
