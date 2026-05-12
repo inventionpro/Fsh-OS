@@ -96,14 +96,19 @@ export const _desktop = `{
     "columns": 15,
     "apps": [
       {
-        "id": "files",
+        "id": "notepad",
         "x": 0,
         "y": 0
       },
       {
-        "id": "notepad",
+        "id": "files",
         "x": 0,
         "y": 1
+      },
+      {
+        "id": "config",
+        "x": 0,
+        "y": 2
       }
     ]
   },
@@ -213,6 +218,7 @@ body, #app {
 }
 #open-apps img {
   height: 100%;
+  aspect-ratio: 1/1;
 }
 .cell {
   width: 100%;
@@ -245,7 +251,7 @@ body, #app {
   width: 400px;
   height: 250px;
   padding: 4px;
-  background: #fff4;
+  background: #bbb4;
   backdrop-filter: blur(10px);
   border-radius: 0.5rem;
   overflow: hidden;
@@ -276,6 +282,14 @@ body, #app {
   height: 100%;
   border: none;
   border-radius: 0.5rem;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: currentColor;
 }
 </style>
 <div id="desktop"></div>
@@ -372,7 +386,25 @@ window.openApp = (id, attributes={})=>{
   let iframe = app.querySelector('iframe');
   let prepend = \`<script>
   window.startAttributes = \${JSON.stringify(attributes||{})};
-</script>\`;
+</script>
+<style>
+body {
+  font-family: Lexend, Arial, sans-serif;
+  color: #ddd;
+  width: 100dvw;
+  height: 100dvh;
+  margin: 0px;
+  overflow: hidden;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: currentColor;
+}
+</style>\`;
   iframe.setAttribute('srcdoc', prepend+info.html);
 }
 window.closeapp = (id)=>{
@@ -398,6 +430,7 @@ window.setDesktop = ()=>{
   });
   // Search
   let apps;
+  let appindex;
   document.addEventListener('click', (evt)=>{
     const div = document.getElementById('bar');
     if (!div?.contains(evt.target)) document.getElementById('search').style.display = 'none';
@@ -406,7 +439,10 @@ window.setDesktop = ()=>{
     document.getElementById('search').style.display = '';
   };
   document.querySelector('#search input').oninput = (evt)=>{
-    if (!apps) apps = FS.get('#/apps').map(app=>JSON.parse(FS.get('#/apps/'+app)));
+    if (JSON.stringify(appindex)!==JSON.stringify(FS.get('#/apps'))) {
+      appindex = FS.get('#/apps');
+      apps = appindex.map(app=>JSON.parse(FS.get('#/apps/'+app)));
+    }
     let query = document.querySelector('#search input').value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
       .filter(app=>app.name.toLowerCase().includes(query))
@@ -448,16 +484,12 @@ window.setBackground = ()=>{
   let bg = JSON.parse(FS.get('~/_desktop.json')).background;
   switch (bg.type) {
     case 'color':
-      if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) {
-        throw new Error('Invalid color');
-      }
+      if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) throw new Error('Invalid color');
       document.getElementById('app').style.background = bg.value;
       document.getElementById('app').style.setProperty('--bg', bg.value);
       break;
     case 'url':
-      if (!(new RegExp('^https?://(www\\.)?[-a-zA-Z0-9@:%\\._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$', 'm')).test(bg.value)) {
-        throw new Error('Invalid url');
-      }
+      if (!(new RegExp('^https?:\\/\\/(www.)?[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_+.~#?&\\\\/\\\\/=]*)$|^data:[\\\\w\\\\/+.-]+;\\\\w+,.*$', 'mi')).test(bg.value)) throw new Error('Invalid url');
       document.getElementById('app').style.background = 'url('+bg.value+') center / cover no-repeat';
       document.getElementById('app').style.setProperty('--bg', '#181818');
       break;
