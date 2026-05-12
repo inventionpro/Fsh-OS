@@ -2,6 +2,74 @@ function $(o){
   return JSON.stringify(o, null, 2);
 }
 
+const notepad = {
+  id: 'notepad',
+  name: 'Notepad',
+  icon: './media/app/notepad.svg',
+  html: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      textarea {
+        flex: 1;
+        resize: none;
+        outline: none;
+      }
+      body, textarea {
+        font-family: Lexend, Arial;
+        color: white;
+        border-radius: 0.5rem;
+        background: none;
+      }
+      span {
+        font-size: 85%;
+        color: #bbb;
+      }
+      button {
+        font-family: inherit;
+        color: inherit;
+        margin: 2px;
+        border: none;
+        border-radius: 0.25rem;
+        background-color: #fff4;
+      }
+    </style>
+  </head>
+  <body>
+    <span>New File</span>
+    <textarea></textarea>
+    <div>
+      <button>Save</button>
+    </div>
+    <script>
+      const FS = window.top.FS;
+      let file;
+      if (window.startAttributes&&window.startAttributes.file) {
+        file = window.startAttributes.file;
+        document.querySelector('span').innerText = file;
+        document.querySelector('textarea').value = FS.get(file);
+      }
+      document.querySelector('button').onclick = ()=>{
+        if (!file) {
+          file = prompt('File path');
+          document.querySelector('span').innerText = file;
+        }
+        try {
+          FS.get(file)
+        } catch(err) {
+          FS.create(file);
+        }
+        FS.set(file, document.querySelector('textarea').value);
+      };
+    </script>
+  </body>
+</html>`
+};
+
 const files = {
   id: 'files',
   name: 'Files',
@@ -13,12 +81,6 @@ const files = {
       body {
         display: flex;
         flex-direction: column;
-        width: 100dvw;
-        height: 100dvh;
-        color: #ddd;
-        font-family: Lexend, Arial, sans-serif;
-        margin: 0px;
-        overflow: hidden;
       }
       .h {
         height: 0px;
@@ -96,72 +158,142 @@ const files = {
 </html>`
 };
 
-const notepad = {
-  id: 'notepad',
-  name: 'Notepad',
-  icon: './media/app/notepad.svg',
+const config = {
+  id: 'config',
+  name: 'Configuration',
+  icon: './media/app/config.svg',
   html: `<!DOCTYPE html>
 <html lang="en">
   <head>
     <style>
       body {
         display: flex;
-        flex-direction: column;
-        width: 100dvw;
-        height: 100dvh;
-        margin: 0px;
-        overflow: hidden;
       }
-      textarea {
+      side {
+        width: 25dvw;
+        padding: 5px;
+        box-sizing: border-box;
+      }
+      main {
         flex: 1;
-        resize: none;
-        outline: none;
+        padding: 5px;
+        border-radius: 0.5rem;
+        background-color: #0004;
       }
-      body, textarea {
-        font-family: Lexend, Arial;
-        color: white;
+      button {
+        cursor: pointer;
+        text-align: start;
+        color: currentColor;
+        width: 100%;
+        font-family: inherit;
+        border: none;
+        border-radius: 0.3rem;
+        background-color: #0000;
+        transition: background 500ms;
+      }
+      button:hover {
+        background-color: #0006;
+      }
+      input, select {
+        font-family: inherit;
+        color: currentColor;
+        border: 1px currentColor solid;
         border-radius: 0.5rem;
         background: none;
       }
-      span {
-        font-size: 85%;
-        color: #bbb;
+      option {
+        color: #ddd;
+        background-color: #222;
       }
-      button {
-        font-family: inherit;
-        color: inherit;
-        margin: 2px;
-        border: none;
-        border-radius: 0.25rem;
-        background-color: #fff4;
+      input[type="number"] {
+        width: 6ch;
+      }
+      input[type="file"] {
+        width: 100%;
+        min-width: 0px;
+      }
+      .small {
+        font-size: 75%;
       }
     </style>
   </head>
   <body>
-    <span>New File</span>
-    <textarea></textarea>
-    <div>
-      <button>Save</button>
-    </div>
+    <side>
+      <button data-tab="style">Appearance</button>
+    </side>
+    <main>
+      <div data-tab="style">
+        <b>Desktop</b><br>
+        <label>Rows <input type="number" id="rows"></label>
+        <label>Columns <input type="number" id="cols"></label>
+        <br>
+        <span class="small">^ Requires reloading desktop</span>
+        <br>
+        <label>Background <select id="bg-type">
+          <option value="color">Color</option>
+          <option value="url">Media URL</option>
+          <option value="file">Media File</option>
+        </select><br><input type="color" id="bg-val"></label>
+        <br>
+        <label>Time: <input id="time"></label>
+      </div>
+    </main>
     <script>
       const FS = window.top.FS;
-      let file;
-      if (window.startAttributes&&window.startAttributes.file) {
-        file = window.startAttributes.file;
-        document.querySelector('span').innerText = file;
-        document.querySelector('textarea').value = FS.get(file);
+      let rows = document.getElementById('rows');
+      let cols = document.getElementById('cols');
+      let type = document.getElementById('bg-type');
+      let val = document.getElementById('bg-val');
+      let time = document.getElementById('time');
+      let data = JSON.parse(FS.get('~/_desktop.json'));
+      rows.value = data.desktop.rows;
+      cols.value = data.desktop.columns;
+      type.value = data.background.type==='url'?(data.background.value.startsWith('data:')?'file':'url'):'color';
+      val.setAttribute('type', type.value);
+      if (type.value!=='file') val.value = data.background.value;
+      time.value = data.time.replaceAll('\\n','\\\\n');
+      let debounce;
+      function update() {
+        if (debounce) clearTimeout(debounce);
+        debounce = setTimeout(()=>{
+          debounce = null;
+          FS.set('~/_desktop.json', JSON.stringify(data));
+        }, 200);
       }
-      document.querySelector('button').onclick = ()=>{
-        if (!file) {
-          file = prompt('File path');
-          document.querySelector('span').innerText = file;
+      rows.onchange = cols.onchange = ()=>{
+        data.desktop.rows = rows.value;
+        data.desktop.columns = cols.value;
+        update();
+      };
+      type.onchange = ()=>{
+        val.setAttribute('type', type.value);
+      };
+      val.onchange = val.oninput = ()=>{
+        switch(type.value) {
+          case 'color':
+            data.background.type = 'color';
+            data.background.value = val.value;
+            update();
+            break;
+          case 'url':
+            data.background.type = 'url';
+            data.background.value = val.value;
+            update();
+            break;
+          case 'file':
+            data.background.type = 'url';
+            let reader = new FileReader();
+            reader.onload = ()=>{
+              data.background.value = reader.result;
+              update();
+            };
+            reader.readAsDataURL(val.files[0]);
+            break;
         }
-        try {
-          FS.get(file)
-        } catch(err) {
-          FS.create(file);
-        }
-        FS.set(file, document.querySelector('textarea').value);
+      };
+      time.onchange = ()=>{
+        data.time = time.value.replaceAll('\\\\n','\\n');
+        update();
       };
     </script>
   </body>
@@ -177,10 +309,6 @@ const terminal = {
   <head>
     <style>
       body {
-        width: 100dvw;
-        height: 100dvh;
-        margin: 0px;
-        overflow: hidden;
         background-color: #000c;
       }
       body > span {
@@ -244,7 +372,8 @@ const terminal = {
 };
 
 export let default_apps = {
-  'files.app': $(files),
   'notepad.app': $(notepad),
+  'files.app': $(files),
+  'config.app': $(config),
   'terminal.app': $(terminal)
 };
