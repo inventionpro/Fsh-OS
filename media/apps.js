@@ -132,7 +132,7 @@ const files = {
     </div>
     <script>
       const FS = window.top.FS;
-      let current = '';
+      let current = '/home';
       function showTop() {
         document.getElementById('path').innerText = (current.length?'':'/') + current;
       }
@@ -245,7 +245,7 @@ const config = {
       let type = document.getElementById('bg-type');
       let val = document.getElementById('bg-val');
       let time = document.getElementById('time');
-      let data = JSON.parse(FS.get('~/_desktop.json'));
+      let data = JSON.parse(FS.get('@/desktop.json'));
       rows.value = data.desktop.rows;
       cols.value = data.desktop.columns;
       type.value = data.background.type==='url'?(data.background.value.startsWith('data:')?'file':'url'):'color';
@@ -257,7 +257,7 @@ const config = {
         if (debounce) clearTimeout(debounce);
         debounce = setTimeout(()=>{
           debounce = null;
-          FS.set('~/_desktop.json', JSON.stringify(data));
+          FS.set('@/desktop.json', JSON.stringify(data));
         }, 200);
       }
       rows.onchange = cols.onchange = ()=>{
