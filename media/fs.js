@@ -20,8 +20,15 @@ import { default_apps } from './apps.js';
 export class fs {
   constructor() {
     this.tree = {
+      config: {
+        'desktop.json': _desktop
+      },
       home: {
-        '_desktop.json': _desktop
+        downloads: {},
+        documents: {},
+        media: {},
+        video: {},
+        music: {}
       },
       bin: {
         apps: default_apps,
@@ -47,6 +54,10 @@ export class fs {
     let seg = path.split('/');
     switch(seg.shift()) {
       case '':
+        break;
+      case '@':
+        if (!file.config) throw new Error('Missing directory/file: config from /config');
+        file = file.config;
         break;
       case '~':
         if (!file.home) throw new Error('Missing directory/file: home from /home');

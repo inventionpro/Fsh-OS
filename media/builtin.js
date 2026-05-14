@@ -414,7 +414,7 @@ window.closeapp = (id)=>{
 }
 window.setDesktop = ()=>{
   let desk = document.getElementById('desktop');
-  let desktop = JSON.parse(FS.get('~/_desktop.json')).desktop;
+  let desktop = JSON.parse(FS.get('@/desktop.json')).desktop;
   desk.style.gridTemplateRows = 'repeat('+desktop.rows+', 1fr)';
   desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
   desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map((_,i)=>\`<div class="cell" n="\${i}"></div>\`).join('');
@@ -481,7 +481,7 @@ window.showOpenApps = ()=>{
   document.getElementById('open-apps').innerHTML = Array.from(apps).map(app=>\`<button onclick="document.getElementById('a-\${window.openapps.find(ap=>ap.app===app).pid}').style.zIndex=++window.topAppZ"><img src="\${JSON.parse(FS.tree.bin.apps[app+'.app']).icon}"></button>\`).join('');
 }
 window.setBackground = ()=>{
-  let bg = JSON.parse(FS.get('~/_desktop.json')).background;
+  let bg = JSON.parse(FS.get('@/desktop.json')).background;
   switch (bg.type) {
     case 'color':
       if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) throw new Error('Invalid color');
@@ -496,7 +496,7 @@ window.setBackground = ()=>{
   }
 }
 window.setTime = ()=>{
-  let time = JSON.parse(FS.get('~/_desktop.json')).time;
+  let time = JSON.parse(FS.get('@/desktop.json')).time;
   let date = new Date();
   document.getElementById('time').innerText = time
     .replaceAll('%H',date.getHours().toString().padStart(2, '0'))
