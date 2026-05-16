@@ -114,6 +114,19 @@ export const _desktop = `{
   },
   "time": "%k:%M:%S\\n%d/%m/%Y"
 }`;
+export const _permissions = `{
+  "unsandboxed": ["terminal"],
+
+  "fs": ["notepad", "files", "config"],
+  "permissions": ["config"]
+}`;
+export const _openers = `{
+  "@": ["notepad"],
+
+  "js": ["notepad"],
+  "json": ["notepad"],
+  "txt": ["notepad"]
+}`;
 
 // Commands
 export const desktop = `if (window.interval) clearInterval(window.interval);
@@ -126,6 +139,36 @@ body, #app {
   color: #fff;
   background: #000;
   font-family: Lexend, Arial;
+  overflow: hidden;
+}
+h1, h2, h3 { margin: 0px; }
+hr { border: 1px currentColor solid; }
+dialog {
+  color: inherit;
+  font-family: inherit;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #0008;
+}
+::backdrop {
+  backdrop-filter: blur(4px);
+}
+#selector div {
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+}
+#selector button {
+  cursor: pointer;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  font-family: inherit;
+  color: inherit;
+  padding: 0px;
+  border: none;
+  border-radius: 0.5rem;
+  background: #222;
   overflow: hidden;
 }
 #desktop {
@@ -292,6 +335,11 @@ body, #app {
   background: currentColor;
 }
 </style>
+<dialog closedby="any" id="selector">
+  <h2>How to open "<span></span>"</h2>
+  <hr>
+  <div></div>
+</dialog>
 <div id="desktop"></div>
 <div id="bar">
   <div id="search" style="display:none">
@@ -412,6 +460,22 @@ window.closeapp = (id)=>{
   window.openapps = window.openapps.filter(app=>app.pid!==id);
   window.showOpenApps();
 }
+window.openfile = (file)=>{
+  let openers = JSON.parse(FS.get('@/openers.json'));
+  let ext = file.split('.')[1];
+  if (!openers[ext]) ext = '@';
+  if (openers[ext].length===1) {
+    window.top.openApp(openers[ext][0], { file });
+  } else {
+    let selector = document.getElementById('selector');
+    selector.showModal();
+    selector.querySelector('span').innerText = file;
+    selector.querySelector('div').innerHTML = openers[ext]
+      .map(app=>JSON.parse(FS.get('#/apps/'+app+'.app')))
+      .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\', { file: \\''+file+'\\' });document.getElementById(\\'selector\\').close()"><img src="'+app.icon+'" width="50" height="50" aria-hidden="true">'+app.name+'</button>')
+      .join('');
+  }
+};
 window.setDesktop = ()=>{
   let desk = document.getElementById('desktop');
   let desktop = JSON.parse(FS.get('@/desktop.json')).desktop;
@@ -516,13 +580,6 @@ window.setTime = ()=>{
     .replaceAll('%Y',date.getFullYear())
     .replaceAll('%y',date.getFullYear()%100);
 }
-/*
-%k:%M             6:25
-%k:%M:%S          13:04:21
-%l:%M:%S %p       2:10:01 PM
-%l:%M:%S %d/%m/%Y 23:00:05 02/06/2025
-%H:%M %d/%m/%y    05:00 02/06/25
-*/
 /* Updates */
 window.setDesktop();
 window.setBackground();
