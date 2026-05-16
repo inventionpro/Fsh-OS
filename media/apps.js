@@ -146,11 +146,8 @@ const files = {
         return '<details><summary><button onclick="current=\`' + (l.length?l:'') + '\`;showTop();showContents();">' + n + '</button></summary>' + inner + '</details>';
       }
       document.getElementById('folders').innerHTML = traverse(FS.tree, '/', '');
-      function viewFile(file) {
-        window.top.openApp('notepad', { file });
-      }
       function showContents() {
-        document.getElementById('main').innerHTML = FS.get(current).map(f=>'<button onclick="'+(f.includes('.')?'viewFile(current+\`/'+f+'\`)':'current+=\`/'+f+'\`;showTop();showContents()')+'">'+f+'</button>').join('');
+        document.getElementById('main').innerHTML = FS.get(current).map(f=>'<button onclick="'+(f.includes('.')?'window.top.openfile(current+\`/'+f+'\`)':'current+=\`/'+f+'\`;showTop();showContents()')+'">'+f+'</button>').join('');
       }
       showContents();
     </script>
@@ -179,6 +176,7 @@ const config = {
         padding: 5px;
         border-radius: 0.5rem;
         background-color: #0004;
+        overflow-y: auto;
       }
       button {
         cursor: pointer;
@@ -236,6 +234,31 @@ const config = {
         </select><br><input type="color" id="bg-val"></label>
         <br>
         <label>Time: <input id="time"></label>
+        <details>
+          <summary class="small">Time syntax</summary>
+          <pre style="margin:0">%k:%M             14:04
+%l:%M:%S %p       2:04:21 PM
+%k:%M:%S %d/%m/%Y 14:04:21 02/06/2026
+%I:%M%P %d/%m/%y  02:04pm 02/06/26
+
+Syntax Example Description
+%k       5     Current 24 hour
+%H      05     Current 24 hour (2-digit)
+%l       2     Current 12 hour
+%I      02     Current 12 hour (2-digit)
+%p      PM     AM/PM
+%P      pm     am/pm
+%M      04     Current minute (2-digit)
+%-M      4     Current minute
+%S      07     Current second (2-digit)
+%-S      7     Current second
+%d      02     Current day (2-digit)
+%-d      2     Current day
+%m      06     Current month (2-digit)
+%-m      6     Current month
+%Y      2026   Current year (Full)
+%y      26     Current year (2-digit)</pre>
+        </details>
       </div>
     </main>
     <script>
