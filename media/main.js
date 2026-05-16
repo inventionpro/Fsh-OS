@@ -11,19 +11,21 @@ const FS = new fs();
 window.FS = FS;
 consoleprint('File system setup finished');
 try {
-  consoleprint('Running tty');
+  consoleprint('Starting fsh interpreter');
   let args = [];
-  eval(FS.get('#/tty.js'));
+  eval(FS.get('#/fsh.js'));
   try {
-    consoleprint('Starting fsh interpreter');
-    let args = [];
-    eval(FS.get('#/fsh.js'));
+    consoleclear();
+    consoleprint('Running tty');
+    window.fshrunhook('tty');
+    try {
+      window.fshrunhook('dt');
+    } catch(err) {
+      consoleprint('Could not load desktop', true);
+    }
   } catch(err) {
-    consoleprint('Could not load interpreter', true);
+    console.error('Fatal, cannot start tty', true);
   }
-  consoleclear()
-  consoleprint('Welcome');
-  consoleprint('Run "dt" to start experimental visual desktop');
 } catch(err) {
-  console.error('Fatal, cannot start tty');
+  consoleprint('Fatal, cannot start interpreter', true);
 }

@@ -4,6 +4,8 @@ import {
   tty,
   // Config
   _desktop,
+  _permissions,
+  _openers,
   // Commands
   desktop,
   js,
@@ -21,7 +23,9 @@ export class fs {
   constructor() {
     this.tree = {
       config: {
-        'desktop.json': _desktop
+        'desktop.json': _desktop,
+        'permissions.json': _permissions,
+        'openers.json': _openers
       },
       home: {
         downloads: {},
