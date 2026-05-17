@@ -242,22 +242,22 @@ const config = {
 %I:%M%P %d/%m/%y  02:04pm 02/06/26
 
 Syntax Example Description
-%k       5     Current 24 hour
-%H      05     Current 24 hour (2-digit)
-%l       2     Current 12 hour
-%I      02     Current 12 hour (2-digit)
+%k       5     24 Hour
+%H      05     24 Hour (2-digit)
+%l       2     12 Hour
+%I      02     12 Hour (2-digit)
 %p      PM     AM/PM
 %P      pm     am/pm
-%M      04     Current minute (2-digit)
-%-M      4     Current minute
-%S      07     Current second (2-digit)
-%-S      7     Current second
-%d      02     Current day (2-digit)
-%-d      2     Current day
-%m      06     Current month (2-digit)
-%-m      6     Current month
-%Y      2026   Current year (Full)
-%y      26     Current year (2-digit)</pre>
+%M      04     Minute (2-digit)
+%-M      4     Minute
+%S      07     Second (2-digit)
+%-S      7     Second
+%d      02     Day (2-digit)
+%-d      2     Day
+%m      06     Month (2-digit)
+%-m      6     Month
+%Y      2026   Year (Full)
+%y      26     Year (2-digit)</pre>
         </details>
       </div>
     </main>
