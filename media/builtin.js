@@ -143,6 +143,14 @@ body, #app {
 }
 h1, h2, h3 { margin: 0px; }
 hr { border: 1px currentColor solid; }
+button {
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  border: none;
+  border-radius: 0.25rem;
+  transition: 250ms;
+}
 dialog {
   color: inherit;
   font-family: inherit;
@@ -159,15 +167,10 @@ dialog {
   flex-direction: column;
 }
 #selector button {
-  cursor: pointer;
   display: flex;
   gap: 5px;
   align-items: center;
-  font-family: inherit;
-  color: inherit;
   padding: 0px;
-  border: none;
-  border-radius: 0.5rem;
   background: #222;
   overflow: hidden;
 }
@@ -189,14 +192,10 @@ dialog {
   z-index: 9999999999999;
 }
 #bar > button {
-  cursor: pointer;
   min-width: 5dvh;
   height: 5dvh;
-  color: #fff;
   padding: 5px;
-  border: none;
   background: #0000;
-  transition: 500ms;
 }
 #bar > button:hover {
   background: #0004;
@@ -233,15 +232,10 @@ dialog {
   flex-direction: column;
 }
 #search button {
-  cursor: pointer;
   text-align: left;
-  color: #ddd;
   margin: 2px 0px;
   padding: 5px;
-  border: none;
-  border-radius: 0.5rem;
   background: none;
-  transition: background 250ms;
 }
 #search button:hover {
   background: #0008;
@@ -251,12 +245,11 @@ dialog {
   gap: 5px;
   align-items: center;
   height: 100%;
+  user-select: none;
 }
 #open-apps button {
-  cursor: pointer;
   height: 80%;
   padding: 0px;
-  border: none;
   background: none;
 }
 #open-apps img {
@@ -299,6 +292,7 @@ dialog {
   border-radius: 0.5rem;
   overflow: hidden;
   box-shadow: 0px 0px 2px black;
+  box-sizing: border-box;
 }
 #app .application .header {
   cursor: default;
@@ -310,12 +304,8 @@ dialog {
   text-shadow: 0px 0px 2px black;
 }
 #app .application .header button {
-  color: #fff;
   text-shadow: 0px 0px 2px black;
-  border: none;
-  border-radius: 0.25rem;
   background: transparent;
-  transition: background 250ms;
 }
 #app .application .header button:hover {
   background: #d00;
@@ -325,6 +315,7 @@ dialog {
   height: 100%;
   border: none;
   border-radius: 0.5rem;
+  user-select: none;
 }
 ::-webkit-scrollbar {
   width: 8px;
@@ -374,38 +365,87 @@ window.openApp = (id, attributes={})=>{
 </div>
 <iframe></iframe>\`;
   // Size + Position
-  let bbb = app.getBoundingClientRect();
-  app.style.left = window.innerWidth/2 - bbb.width/2 + 'px';
-  app.style.top = window.innerHeight/2 - bbb.height/2 + 'px';
+  app.style.left = window.innerWidth/2-200 + 'px';
+  app.style.top = window.innerHeight/2-125 + 'px';
+  app.style.width = '400px';
+  app.style.height = '250px';
   // Resize
-  app.addEventListener('pointermove', (e) => {
+  let resizing;
+  app.onpointerdown = (evt)=>{
     const rect = app.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    let cursor = "default";
+    const x = evt.clientX - rect.left;
+    const y = evt.clientY - rect.top;
     const left = x < 10;
     const right = x > rect.width - 10;
     const top = y < 10;
     const bottom = y > rect.height - 10;
-    if (top && left) {
-      cursor = "nwse";
-    } else if (top && right) {
-      cursor = "nesw";
-    } else if (bottom && left) {
-      cursor = "nesw";
-    } else if (bottom && right) {
-      cursor = "nwse";
-    } else if (left) {
-      cursor = "ew";
-    } else if (right) {
-      cursor = "ew";
-    } else if (top) {
-      cursor = "ns";
-    } else if (bottom) {
-      cursor = "ns";
+    if (left||right||top||bottom) {
+      app.setPointerCapture(evt.pointerId);
+      resizing = { id: evt.pointerId, x: evt.clientX, y: evt.clientY, left, right, top, bottom };
     }
-    app.style.cursor = cursor+'-resize';
-  });
+  };
+  app.onpointerup = (evt)=>{
+    if (resizing && resizing.id===evt.pointerId) {
+      app.releasePointerCapture(evt.pointerId);
+      resizing = null;
+    }
+  };
+  app.onpointermove = (evt)=>{
+    let rect = app.getBoundingClientRect();
+    let x = evt.clientX - rect.left;
+    let y = evt.clientY - rect.top;
+    let left;
+    let right;
+    let top;
+    let bottom;
+    if (resizing && resizing.id===evt.pointerId) {
+      ({ left, right, top, bottom } = resizing);
+    } else {
+      left = x < 10;
+      right = x > rect.width - 10;
+      top = y < 10;
+      bottom = y > rect.height - 10;
+    }
+    let cursor = '';
+    if ((top && left) || (bottom && right)) {
+      cursor = 'nwse';
+    } else if ((top && right) || (bottom && left)) {
+      cursor = 'nesw';
+    } else if (left || right) {
+      cursor = 'ew';
+    } else if (top || bottom) {
+      cursor = 'ns';
+    }
+    app.style.cursor = cursor.length?cursor+'-resize':'';
+    if (resizing && resizing.id===evt.pointerId) {
+      let l = Number(app.style.left.replace('px',''));
+      let t = Number(app.style.top.replace('px',''));
+      let w = Number(app.style.width.replace('px',''));
+      let h = Number(app.style.height.replace('px',''));
+      let dx = evt.clientX-resizing.x;
+      let dy = evt.clientY-resizing.y;
+      if (right) w += dx;
+      if (bottom) h += dy;
+      if (left) {
+        l += dx;
+        w -= dx;
+      }
+      if (top) {
+        t += dy;
+        h -= dy;
+      }
+      if (left||right) {
+        resizing.x = evt.clientX;
+        app.style.left = l+'px';
+        app.style.width = w+'px';
+      }
+      if (top||bottom) {
+        resizing.y = evt.clientY;
+        app.style.top = t+'px';
+        app.style.height = h+'px';
+      }
+    }
+  };
   // Move
   let header = app.querySelector('.header');
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -426,8 +466,8 @@ window.openApp = (id, attributes={})=>{
       pos2 = pos4 - e.clientY;
       pos3 = e.clientX;
       pos4 = e.clientY;
-      app.style.top = (app.offsetTop - pos2) + 'px';
       app.style.left = (app.offsetLeft - pos1) + 'px';
+      app.style.top = (app.offsetTop - pos2) + 'px';
     };
   };
   // Inner
