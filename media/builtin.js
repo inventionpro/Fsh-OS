@@ -175,9 +175,11 @@ dialog {
   overflow: hidden;
 }
 #desktop {
+  display: grid;
+  grid-template-rows: repeat(var(--rows, 8), 1fr);
+  grid-template-columns: repeat(var(--columns, 15), 1fr);
   width: 100dvw;
   height: 95dvh;
-  display: grid;
 }
 #bar {
   position: absolute;
@@ -299,6 +301,7 @@ dialog {
   flex: 1;
   display: flex;
   padding: 0px 2px;
+  user-select: none;
 }
 #app .application .header span {
   text-shadow: 0px 0px 2px black;
@@ -371,7 +374,9 @@ window.openApp = (id, attributes={})=>{
   app.style.height = '250px';
   // Resize
   let resizing;
+  let moving = false;
   app.onpointerdown = (evt)=>{
+    if (moving) return;
     const rect = app.getBoundingClientRect();
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
@@ -452,10 +457,12 @@ window.openApp = (id, attributes={})=>{
   header.onpointerdown = (e)=>{
     if (e.target.tagName==='BUTTON') return;
     if (window.topAppZ!=app.style.zIndex) app.style.zIndex = ++window.topAppZ;
+    moving = true;
     header.setPointerCapture(e.pointerId);
     pos3 = e.clientX;
     pos4 = e.clientY;
     document.onpointerup = ()=>{
+      moving = false;
       header.releasePointerCapture(e.pointerId);
       document.onpointereup = null;
       document.onpointermove = null;
@@ -519,8 +526,8 @@ window.openfile = (file)=>{
 window.setDesktop = ()=>{
   let desk = document.getElementById('desktop');
   let desktop = JSON.parse(FS.get('@/desktop.json')).desktop;
-  desk.style.gridTemplateRows = 'repeat('+desktop.rows+', 1fr)';
-  desk.style.gridTemplateColumns = 'repeat('+desktop.columns+', 1fr)';
+  desk.style.setProperty('--rows', desktop.rows);
+  desk.style.setProperty('--columns', desktop.columns);
   desk.innerHTML = Array.from({ length: desktop.rows*desktop.columns }).map((_,i)=>\`<div class="cell" n="\${i}"></div>\`).join('');
   desktop.apps.forEach(ae=>{
     let app = JSON.parse(FS.get('#/apps/'+ae.id+'.app'));
@@ -532,7 +539,31 @@ window.setDesktop = ()=>{
     icon.classList.remove('new');
     icon.onclick = ()=>{window.openApp(app.id)};
   });
-  // Search
+  // Grid
+  let draggedItem = null;
+  desk.ondragstart = (evt)=>{
+    if (evt.target.classList.contains('app')) {
+      draggedItem = evt.target;
+      setTimeout(() => {
+        evt.target.style.display = 'none';
+      }, 0);
+    }
+  };
+  desk.ondragend = (evt)=>{
+    if (draggedItem) {
+      draggedItem.style.display = 'block';
+      draggedItem = null;
+    }
+  };
+  desk.ondragover = (evt)=>{
+    evt.preventDefault();
+  };
+  desk.ondrop = (evt)=>{
+    evt.preventDefault();
+    if (evt.target.classList.contains('cell') && draggedItem) evt.target.append(draggedItem);
+  };
+}
+window.setSearch = ()=>{
   let apps;
   let appindex;
   document.addEventListener('click', (evt)=>{
@@ -554,38 +585,23 @@ window.setDesktop = ()=>{
       .join('');
   };
   document.querySelector('#search input').oninput();
-  // Grid
-  let grid = document.getElementById('desktop');
-  let draggedItem = null;
-  grid.addEventListener('dragstart', (e) => {
-    if (e.target.classList.contains('app')) {
-      draggedItem = e.target;
-      setTimeout(() => {
-        e.target.style.display = "none";
-      }, 0);
-    }
-  });
-  grid.addEventListener('dragend', (e) => {
-    if (draggedItem) {
-      draggedItem.style.display = "block";
-      draggedItem = null;
-    }
-  });
-  grid.addEventListener('dragover', (e) => {
-    e.preventDefault();
-  });
-  grid.addEventListener('drop', (e) => {
-    e.preventDefault();
-    if (e.target.classList.contains('cell') && draggedItem) e.target.append(draggedItem);
-  });
-}
+};
 window.showOpenApps = ()=>{
   let apps = new Set();
   window.openapps.forEach(app=>apps.add(app.app));
   document.getElementById('open-apps').innerHTML = Array.from(apps).map(app=>\`<button onclick="document.getElementById('a-\${window.openapps.find(ap=>ap.app===app).pid}').style.zIndex=++window.topAppZ"><img src="\${JSON.parse(FS.tree.bin.apps[app+'.app']).icon}"></button>\`).join('');
 }
+window.lastDesktop = '';
+window.lastBackground = '';
 window.setBackground = ()=>{
-  let bg = JSON.parse(FS.get('@/desktop.json')).background;
+  let desktop = JSON.parse(FS.get('@/desktop.json'));
+  if (window.lastDesktop!==desktop.desktop.rows+'-'+desktop.desktop.columns) {
+    window.lastDesktop = desktop.desktop.rows+'-'+desktop.desktop.columns;
+    window.setDesktop();
+  }
+  let bg = desktop.background;
+  if (window.lastBackground===bg.value) return;
+  window.lastBackground = bg.value;
   switch (bg.type) {
     case 'color':
       if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) throw new Error('Invalid color');
@@ -622,6 +638,7 @@ window.setTime = ()=>{
 }
 /* Updates */
 window.setDesktop();
+window.setSearch();
 window.setBackground();
 window.setTime();
 window.interval = setInterval(()=>{

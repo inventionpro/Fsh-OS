@@ -222,10 +222,8 @@ const config = {
     <main>
       <div data-tab="style">
         <b>Desktop</b><br>
-        <label>Rows <input type="number" id="rows"></label>
-        <label>Columns <input type="number" id="cols"></label>
-        <br>
-        <span class="small">^ Requires reloading desktop</span>
+        <label>Rows <input type="number" id="rows" min="1" max="80"></label>
+        <label>Columns <input type="number" id="cols" min="1" max="80"></label>
         <br>
         <label>Background <select id="bg-type">
           <option value="color">Color</option>
