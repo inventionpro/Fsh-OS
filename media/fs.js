@@ -21,7 +21,7 @@ import { default_apps } from './apps.js';
 
 export class fs {
   constructor() {
-    let binary_signal = new Symbol('Binary');
+    let binary_signal = Symbol('Binary');
     this.tree = {
       config: {
         'desktop.json': _desktop,
