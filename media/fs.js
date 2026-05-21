@@ -54,6 +54,8 @@ export class fs {
         'del.js': del
       }
     };
+  }
+  async fillBinary() {
     async function replaceFiles(obj) {
       if (obj===null||typeof obj!=='object') return;
       for (let key of Object.keys(obj)) {
@@ -62,11 +64,11 @@ export class fs {
           let file = await fetch('./binary/'+value);
           obj[key] = await file.blob();
         } else if (typeof value==='object') {
-          replaceFiles(value);
+          await replaceFiles(value);
         }
       }
     }
-    replaceFiles();
+    await replaceFiles();
   }
   _nav(path, create, secondary='', content='') {
     let file = this.tree;

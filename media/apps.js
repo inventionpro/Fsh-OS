@@ -269,8 +269,8 @@ Syntax Example Description
       let data = JSON.parse(FS.get('@/desktop.json'));
       rows.value = data.desktop.rows;
       cols.value = data.desktop.columns;
-      type.value = data.background.type==='color'?'color':'text';
-      val.setAttribute('type', type.value);
+      type.value = data.background.type;
+      val.setAttribute('type', type.value==='color'?'color':'text');
       val.value = data.background.value;
       time.value = data.time.replaceAll('\\n','\\\\n');
       let debounce;
