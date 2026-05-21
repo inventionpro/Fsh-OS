@@ -56,16 +56,14 @@ export class fs {
     };
   }
   async fillBinary() {
-    let _this = this;
-    async function replaceFiles(obj) {
+    let replaceFiles = async(obj)=>{
       if (obj===null||typeof obj!=='object') return;
       for (let key of Object.keys(obj)) {
-        let value = obj[key];
-        if (value===_this.binary_signal) {
-          let file = await fetch('./binary/'+value);
+        if (obj[key]===this.binary_signal) {
+          let file = await fetch('./media/binary/'+key);
           obj[key] = await file.blob();
-        } else if (typeof value==='object') {
-          await replaceFiles(value);
+        } else if (typeof obj[key]==='object') {
+          await replaceFiles(obj[key]);
         }
       }
     }
