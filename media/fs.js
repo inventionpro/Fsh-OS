@@ -112,7 +112,7 @@ export class fs {
       delete parent[k];
       return;
     }
-    if (typeof file === 'object' && !Array.isArray(file) && (!file instanceof Blob)) return Object.keys(file);
+    if (typeof file === 'object' && !Array.isArray(file) && !(file instanceof Blob)) return Object.keys(file);
     return file;
   }
   get(path) {
