@@ -68,7 +68,7 @@ export class fs {
         }
       }
     }
-    await replaceFiles();
+    await replaceFiles(this.tree);
   }
   _nav(path, create, secondary='', content='') {
     let file = this.tree;
