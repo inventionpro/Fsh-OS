@@ -88,8 +88,8 @@ consoleprint('Running tty mode');`;
 // Config
 export const _desktop = `{
   "background": {
-    "type": "color",
-    "value": "#181818"
+    "type": "file",
+    "value": "~/default_background.png"
   },
   "desktop": {
     "rows": 8,
@@ -115,10 +115,12 @@ export const _desktop = `{
   "time": "%k:%M:%S\\n%d/%m/%Y"
 }`;
 export const _permissions = `{
-  "unsandboxed": ["terminal"],
+  "unsandboxed": [],
+  "protected": ["#/tty.js", "#/fsh.js", "#/dt.js", "@/permissions.json"],
 
   "fs": ["notepad", "files", "config"],
-  "permissions": ["config"]
+  "permissions": ["config"],
+  "commands": ["terminal"]
 }`;
 export const _openers = `{
   "@": ["notepad"],
@@ -593,6 +595,7 @@ window.showOpenApps = ()=>{
 }
 window.lastDesktop = '';
 window.lastBackground = '';
+window.lastBackgroundURL = '';
 window.setBackground = ()=>{
   let desktop = JSON.parse(FS.get('@/desktop.json'));
   if (window.lastDesktop!==desktop.desktop.rows+'-'+desktop.desktop.columns) {
@@ -602,6 +605,10 @@ window.setBackground = ()=>{
   let bg = desktop.background;
   if (window.lastBackground===bg.value) return;
   window.lastBackground = bg.value;
+  if (window.lastBackgroundURL) {
+    URL.revokeObjectURL(window.lastBackgroundURL);
+    window.lastBackgroundURL = '';
+  }
   switch (bg.type) {
     case 'color':
       if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) throw new Error('Invalid color');
@@ -611,6 +618,11 @@ window.setBackground = ()=>{
     case 'url':
       if (!(new RegExp('^https?:\\/\\/(www.)?[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_+.~#?&\\\\/\\\\/=]*)$|^data:[\\\\w\\\\/+.-]+;\\\\w+,.*$', 'mi')).test(bg.value)) throw new Error('Invalid url');
       document.getElementById('app').style.background = 'url('+bg.value+') center / cover no-repeat';
+      document.getElementById('app').style.setProperty('--bg', '#181818');
+      break;
+    case 'file':
+      window.lastBackgroundURL = URL.createObjectURL(FS.get(bg.value));
+      document.getElementById('app').style.background = 'url('+window.lastBackgroundURL+') center / cover no-repeat';
       document.getElementById('app').style.setProperty('--bg', '#181818');
       break;
   }
