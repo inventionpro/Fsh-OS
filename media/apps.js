@@ -227,8 +227,8 @@ const config = {
         <br>
         <label>Background <select id="bg-type">
           <option value="color">Color</option>
-          <option value="url">Media URL</option>
-          <option value="file">Media File</option>
+          <option value="url">URL</option>
+          <option value="file">File</option>
         </select><br><input type="color" id="bg-val"></label>
         <br>
         <label>Time: <input id="time"></label>
@@ -269,9 +269,9 @@ Syntax Example Description
       let data = JSON.parse(FS.get('@/desktop.json'));
       rows.value = data.desktop.rows;
       cols.value = data.desktop.columns;
-      type.value = data.background.type==='url'?(data.background.value.startsWith('data:')?'file':'url'):'color';
+      type.value = data.background.type==='color'?'color':'text';
       val.setAttribute('type', type.value);
-      if (type.value!=='file') val.value = data.background.value;
+      val.value = data.background.value;
       time.value = data.time.replaceAll('\\n','\\\\n');
       let debounce;
       function update() {
@@ -287,30 +287,12 @@ Syntax Example Description
         update();
       };
       type.onchange = ()=>{
-        val.setAttribute('type', type.value);
+        val.setAttribute('type', type.value==='color'?'color':'text');
       };
       val.onchange = val.oninput = ()=>{
-        switch(type.value) {
-          case 'color':
-            data.background.type = 'color';
-            data.background.value = val.value;
-            update();
-            break;
-          case 'url':
-            data.background.type = 'url';
-            data.background.value = val.value;
-            update();
-            break;
-          case 'file':
-            data.background.type = 'url';
-            let reader = new FileReader();
-            reader.onload = ()=>{
-              data.background.value = reader.result;
-              update();
-            };
-            reader.readAsDataURL(val.files[0]);
-            break;
-        }
+        data.background.type = type.value;
+        data.background.value = val.value;
+        update();
       };
       time.onchange = ()=>{
         data.time = time.value.replaceAll('\\\\n','\\n');
