@@ -21,7 +21,7 @@ import { default_apps } from './apps.js';
 
 export class fs {
   constructor() {
-    let binary_signal = Symbol('Binary');
+    this.binary_signal = Symbol('Binary');
     this.tree = {
       config: {
         'desktop.json': _desktop,
@@ -34,7 +34,7 @@ export class fs {
         media: {},
         video: {},
         music: {},
-        'default_background.png': binary_signal
+        'default_background.png': this.binary_signal
       },
       bin: {
         apps: default_apps,
@@ -56,11 +56,12 @@ export class fs {
     };
   }
   async fillBinary() {
+    let _this = this;
     async function replaceFiles(obj) {
       if (obj===null||typeof obj!=='object') return;
       for (let key of Object.keys(obj)) {
         let value = obj[key];
-        if (value===binary_signal) {
+        if (value===_this.binary_signal) {
           let file = await fetch('./binary/'+value);
           obj[key] = await file.blob();
         } else if (typeof value==='object') {
