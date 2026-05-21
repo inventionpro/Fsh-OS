@@ -8,6 +8,7 @@ window.fshrunhook = ()=>{};
 // Create fs and run tty
 consoleprint('Starting fs');
 const FS = new fs();
+await FS.fillBinary();
 window.FS = FS;
 consoleprint('File system setup finished');
 try {
