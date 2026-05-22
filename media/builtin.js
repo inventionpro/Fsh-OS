@@ -493,6 +493,18 @@ body {
   margin: 0px;
   overflow: hidden;
 }
+svg {
+  fill: currentColor;
+  outline: currentColor;
+}
+button {
+  cursor: pointer;
+  font-family: inherit;
+  text-align: start;
+  color: currentColor;
+  border: none;
+  transition: background 250ms;
+}
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
