@@ -2,69 +2,6 @@ function $(o){
   return JSON.stringify(o, null, 2);
 }
 
-const notepad = {
-  id: 'notepad',
-  name: 'Notepad',
-  icon: './media/app/notepad.svg',
-  html: `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <style>
-      body {
-        display: flex;
-        flex-direction: column;
-      }
-      textarea {
-        flex: 1;
-        resize: none;
-        outline: none;
-      }
-      body, textarea {
-        font-family: Lexend, Arial;
-        color: white;
-        border-radius: 0.5rem;
-        background: none;
-      }
-      span {
-        font-size: 85%;
-        color: #bbb;
-      }
-      button {
-        margin: 2px;
-        border-radius: 0.25rem;
-        background-color: #fff4;
-      }
-    </style>
-  </head>
-  <body>
-    <span>New File</span>
-    <textarea></textarea>
-    <div>
-      <button>Save</button>
-    </div>
-    <script>
-      let file;
-      if (window.startAttributes&&window.startAttributes.file) {
-        file = window.startAttributes.file;
-        document.querySelector('span').innerText = file;
-        window.FS.get(file).then(data=>{
-          document.querySelector('textarea').value = data;
-        });
-      }
-      document.querySelector('button').onclick = ()=>{
-        if (!file) {
-          file = prompt('File path');
-          document.querySelector('span').innerText = file;
-        }
-        window.FS.create(file).then(_=>{
-          window.FS.set(file, document.querySelector('textarea').value);
-        });
-      };
-    </script>
-  </body>
-</html>`
-};
-
 const files = {
   id: 'files',
   name: 'Files',
@@ -240,6 +177,89 @@ const files = {
         if (!file) return;
         showCreateInput(file);
       };
+    </script>
+  </body>
+</html>`
+};
+
+const notepad = {
+  id: 'notepad',
+  name: 'Notepad',
+  icon: './media/app/notepad.svg',
+  html: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      textarea {
+        flex: 1;
+        resize: none;
+        outline: none;
+      }
+      body, textarea {
+        font-family: Lexend, Arial;
+        color: white;
+        border-radius: 0.5rem;
+        background: none;
+      }
+      span {
+        font-size: 85%;
+        color: #bbb;
+      }
+      button {
+        margin: 2px;
+        border-radius: 0.25rem;
+        background-color: #fff4;
+      }
+    </style>
+  </head>
+  <body>
+    <span>New File</span>
+    <textarea></textarea>
+    <div>
+      <button>Save</button>
+    </div>
+    <script>
+      let file;
+      if (window.startAttributes&&window.startAttributes.file) {
+        file = window.startAttributes.file;
+        document.querySelector('span').innerText = file;
+        window.FS.get(file).then(data=>{
+          document.querySelector('textarea').value = data;
+        });
+      }
+      document.querySelector('button').onclick = ()=>{
+        if (!file) {
+          file = prompt('File path');
+          document.querySelector('span').innerText = file;
+        }
+        window.FS.create(file).then(_=>{
+          window.FS.set(file, document.querySelector('textarea').value);
+        });
+      };
+    </script>
+  </body>
+</html>`
+};
+
+const viewer = {
+  id: 'viewer',
+  name: 'Viewer',
+  icon: './media/app/viewer.svg',
+  html: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+    </style>
+  </head>
+  <body>
+    <button></button>
+    <div></div>
+    <button></button>
+    <script>
     </script>
   </body>
 </html>`
@@ -459,8 +479,9 @@ const terminal = {
 };
 
 export let default_apps = {
-  'notepad.app': $(notepad),
   'files.app': $(files),
+  'notepad.app': $(notepad),
+  'viewer.app': $(viewer),
   'config.app': $(config),
   'terminal.app': $(terminal)
 };
