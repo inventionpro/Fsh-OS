@@ -291,7 +291,7 @@ dialog {
   width: 400px;
   height: 250px;
   padding: 4px;
-  background: #bbb4;
+  background-color: #6664;
   backdrop-filter: blur(10px);
   border-radius: 0.5rem;
   overflow: hidden;
@@ -347,8 +347,29 @@ dialog {
   <span style="display:block;flex:1;"></span>
   <button inert id="time"></button>
 </div>\`;
-window.consoleprint = (t,e)=>{if(e){console.error(t)}else{console.log(t)}};
-window.consoleclear = ()=>{};
+window.consoleprint = (txt,err)=>{
+  console[err?'error':'log'](txt);
+  let permissions = JSON.parse(FS.get('@/permissions.json'));
+  window.openapps.forEach(app=>{
+    if (!permissions.commands.includes(app.app)) return;
+    app.iframe.contentWindow.postMessage({
+      type: 'cmd',
+      action: 'send',
+      content: txt,
+      err
+    }, '*');
+  });
+};
+window.consoleclear = ()=>{
+  let permissions = JSON.parse(FS.get('@/permissions.json'));
+  window.openapps.forEach(app=>{
+    if (!permissions.commands.includes(app.app)) return;
+    app.iframe.contentWindow.postMessage({
+      type: 'cmd',
+      action: 'clear'
+    }, '*');
+  });
+};
 document.body.onclick=()=>{};
 /* Functions */
 window.openapps = [];
@@ -481,6 +502,7 @@ window.openApp = (id, attributes={})=>{
   };
   // Inner
   let iframe = app.querySelector('iframe');
+  window.openapps[window.openapps.findIndex(app=>app.pid===processid)].iframe = iframe;
   let prepend = \`<script>
   window.startAttributes = \${JSON.stringify(attributes||{})};
 </script>
@@ -514,10 +536,90 @@ button {
   background: currentColor;
 }
 </style>\`;
+  let permissions = JSON.parse(FS.get('@/permissions.json'));
+  if (!permissions.unsandboxed.includes(id)) {
+    iframe.setAttribute('sandbox', 'allow-downloads allow-modals allow-pointer-lock allow-presentation allow-scripts');
+    iframe.setAttribute('allow', 'aria-notify=(self) autoplay=(self) bluetooth=(self) camera=(self) captured-surface-control=(self) compute-pressure=(self) cross-origin-isolated=(self) deferred-fetch=(self) deferred-fetch-minimal=(self) display-capture=(self) encrypted-media=(self) fullscreen=(self) gamepad=(self) hid=(self) local-fonts=(self) microphone=(self) midi=(self) picture-in-picture=(self) screen-wake-lock=(self) serial=(self) usb=(self) web-share=(self) xr-spatial-tracking=(self) accelerometer=() ambient-light-sensor=() attribution-reporting=() browsing-topics=() ch-ua-high-entropy-values=() geolocation=() gyroscope=() identity-credentials-get=() idle-detection=() local-network=() local-network-access=() loopback-network=() magnetometer=() on-device-speech-recognition=() otp-credentials=() payment=() private-state-token-issuance=() private-state-token-redemption=() publickey-credentials-create=() publickey-credentials-get=() storage-access=() summarizer=() window-management=()');
+    function handler(evt) {
+      if (evt.source!==iframe.contentWindow) return;
+      if (!evt.data||!evt.data.type) return;
+      let type = evt.data.type;
+      if (type==='openFile') {
+        window.openfile(evt.data.path);
+      } else if (type==='fs'&&permissions.fs.includes(id)) {
+        if (!['get','set','create','delete'].includes(evt.data.action)) return;
+        if (permissions.protected.includes(FS.abs(evt.data.path))&&!(FS.abs(evt.data.path)==='/config/permissions.json'&&permissions.permissions.includes(id))) return;
+        let args = [evt.data.path];
+        if (evt.data.action==='set') args.push(evt.data.data);
+        let h = FS[evt.data.action](...args);
+        let response = {
+          type: 'fs',
+          action: evt.data.action,
+          path: evt.data.path
+        };
+        if (evt.data.action==='get') response.data = h;
+        iframe.contentWindow.postMessage(response, '*');
+      } else if (type==='cmd'&&permissions.commands.includes(id)) {
+        window.fshrunhook(evt.data.command);
+      }
+    }
+    window.openapps[window.openapps.findIndex(app=>app.pid===processid)].handler = handler;
+    window.addEventListener('message', handler);
+    prepend+=\`<script>
+  function _sendAndAwaitFS(action, path, value) {
+    return new Promise((resolve)=>{
+      function manage(evt) {
+        if (evt.data.type!=='fs') return;
+        if (evt.data.action!==action) return;
+        if (evt.data.path!==path) return;
+        window.removeEventListener('message', manage);
+        resolve(action==='get'?evt.data.data:null);
+      }
+      window.addEventListener('message', manage);
+      window.top.postMessage({
+        type: 'fs',
+        action: action,
+        path: path,
+        ...(action==='set'?{ data: value }:{})
+      }, '*');
+    });
+  }
+  window.FS = {
+    get: (path)=>_sendAndAwaitFS('get',path),
+    set: (path,value)=>_sendAndAwaitFS('set',path,value),
+    create: async(path)=>_sendAndAwaitFS('create',path),
+    delete: async(path)=>_sendAndAwaitFS('delete',path)
+  };
+  window.openFile = (path)=>{
+    window.top.postMessage({
+      type: 'openFile',
+      path: path
+    }, '*');
+  };
+  window.runCommand = (cmd)=>{
+    window.top.postMessage({
+      type: 'cmd',
+      command: cmd
+    }, '*');
+  };
+  window.consoleprint = ()=>{};
+  window.consoleclear = ()=>{};
+  window.addEventListener('message', (evt)=>{
+    if (evt.data.type!=='cmd') return;
+    if (evt.data.action==='clear') {
+      window.consoleclear();
+    } else {
+      window.consoleprint(evt.data.content, evt.data.err);
+    }
+  });
+</script>\`;
+  }
   iframe.setAttribute('srcdoc', prepend+info.html);
 }
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
+  let handler = window.openapps.find(app=>app.pid===id).handler;
+  if (handler) window.removeEventListener('message', handler);
   window.openapps = window.openapps.filter(app=>app.pid!==id);
   window.showOpenApps();
 }
