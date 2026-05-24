@@ -118,16 +118,34 @@ export const _permissions = `{
   "unsandboxed": [],
   "protected": ["/bin/tty.js", "/bin/fsh.js", "/bin/dt.js", "/config/permissions.json"],
 
-  "fs": ["notepad", "files", "config"],
+  "fs": ["files", "notepad", "viewer", "config"],
   "fs_protected": ["notepad", "config"],
   "commands": ["terminal"]
 }`;
 export const _openers = `{
-  "@": ["notepad"],
+  "@": ["notepad", "viewer"],
 
   "js": ["notepad"],
   "json": ["notepad"],
-  "txt": ["notepad"]
+  "txt": ["notepad"],
+
+  "png": ["viewer"],
+  "apng": ["viewer"],
+  "jpg": ["viewer"],
+  "jpeg": ["viewer"],
+  "jfif": ["viewer"],
+  "ico": ["viewer"],
+  "gif": ["viewer"], 
+  "webp": ["viewer"],
+  "bmp": ["viewer"],
+  "svg": ["viewer"],
+  "avif": ["viewer"],
+
+  "mp4": ["viewer"],
+  "m4v": ["viewer"],
+  "webm": ["viewer"],
+  "mov": ["viewer"],
+  "mkv": ["viewer"]
 }`;
 
 // Commands
