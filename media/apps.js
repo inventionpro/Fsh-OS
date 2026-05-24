@@ -253,13 +253,44 @@ const viewer = {
 <html lang="en">
   <head>
     <style>
+      p, span, img, video {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100dvw;
+        height: 100dvh;
+        margin: 0px;
+        object-fit: contain;
+      }
     </style>
   </head>
   <body>
-    <button></button>
-    <div></div>
-    <button></button>
+    <p>No file opened?</p>
+    <span style="display:none">File type not supported</span>
+    <img style="display:none">
+    <video style="display:none" controls></video>
     <script>
+      if (window.startAttributes&&window.startAttributes.file) {
+        document.querySelector('p').style.display = 'none';
+        window.FS.get(window.startAttributes.file).then(data=>{
+          let supertype = data?.type?.split('/')[0];
+          if (!data.type||!['image','video'].includes(supertype)) {
+            document.querySelector('span').style.display = '';
+            return;
+          }
+          let url = URL.createObjectURL(data);
+          switch(supertype) {
+            case 'image':
+              document.querySelector('img').style.display = '';
+              document.querySelector('img').src = url;
+              break;
+            case 'video':
+              document.querySelector('video').style.display = '';
+              document.querySelector('video').src = url;
+              break;
+          }
+        });
+      }
     </script>
   </body>
 </html>`
