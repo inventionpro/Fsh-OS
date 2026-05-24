@@ -107,12 +107,22 @@ const files = {
         display: flex;
         flex-direction: column;
         width: 20%;
+        overflow: hidden auto;
+      }
+      #folders summary {
+        white-space: nowrap;
       }
       :not(#folders) > details {
-        padding-left: 10px;
+        margin-left: 4px;
+        padding-left: 4px;
+        border-left: 2px #222 solid;
       }
       #folders button {
+        padding: 1px 0px;
         background-color: transparent;
+      }
+      #folders :not(summary) > button {
+        display: block;
       }
       #main {
         flex: 1;
@@ -163,17 +173,17 @@ const files = {
       }
       showTop();
 
-      function traverse(path, set=false) {
-        window.FS.get(path).then(data=>{
-          data = data
-            .filter(subpath=>!subpath.includes('.'))
-            .map(subpath=>traverse(path+(path!=='/'?'/':'')+subpath));
-          let n = path.split('/').slice(-1)[0];
-          let in = \`<button onclick="current='\${path}';showTop();showContents();">\${n.length?n:'/'}</button>\`;
-          if (data.length) in = '<details><summary>'+in+'</summary>'+data.join('')+'</details>';
-          if (!set) return in;
-          document.getElementById('folders').innerHTML = in;
-        });
+      async function traverse(path, set=false) {
+        let data = await window.FS.get(path);
+        data = data.filter(subpath=>!subpath.includes('.'));
+        for (let i=0; i<data.length; i++) {
+          data[i] = await traverse(path+(path!=='/'?'/':'')+data[i]);
+        }
+        let n = path.split('/').slice(-1)[0];
+        let inner = \`<button onclick="current='\${path}';showTop();showContents();">\${n.length?n:'/'}</button>\`;
+        if (data.length) inner = '<details><summary>'+inner+'</summary>'+data.join('')+'</details>';
+        if (!set) return inner;
+        document.getElementById('folders').innerHTML = inner;
       }
       traverse('/', true);
       function entryClick(f) {
@@ -425,7 +435,7 @@ const terminal = {
         document.querySelector('span').innerHTML += '<span'+(error?' class="err">':'>')+text.toString().replaceAll('<','&lt;')+'</span>';
         document.querySelector('span').scrollTop = document.querySelector('span').scrollHeight;
       }
-      window.consoleclear=(text)=>{
+      window.consoleclear=()=>{
         Array.from(document.querySelectorAll('span span:not(.e)')).forEach(e=>e.remove());
       }
       let io = document.querySelector('input');
