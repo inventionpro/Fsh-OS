@@ -115,6 +115,9 @@ export class fs {
     if (typeof file === 'object' && !Array.isArray(file) && !(file instanceof Blob || file.toString()==='[object Blob]')) return Object.keys(file);
     return file;
   }
+  abs(path) {
+    return path.replace(/^@\//,'/config/').replace(/^~\//,'/home/').replace(/^#\//,'/bin/');
+  }
   get(path) {
     return this._nav(path, false);
   }

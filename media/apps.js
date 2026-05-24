@@ -43,24 +43,22 @@ const notepad = {
       <button>Save</button>
     </div>
     <script>
-      const FS = window.top.FS;
       let file;
       if (window.startAttributes&&window.startAttributes.file) {
         file = window.startAttributes.file;
         document.querySelector('span').innerText = file;
-        document.querySelector('textarea').value = FS.get(file);
+        window.FS.get(file).then(data=>{
+          document.querySelector('textarea').value = data;
+        });
       }
       document.querySelector('button').onclick = ()=>{
         if (!file) {
           file = prompt('File path');
           document.querySelector('span').innerText = file;
         }
-        try {
-          FS.get(file)
-        } catch(err) {
-          FS.create(file);
-        }
-        FS.set(file, document.querySelector('textarea').value);
+        window.FS.create(file).then(_=>{
+          window.FS.set(file, document.querySelector('textarea').value);
+        });
       };
     </script>
   </body>
@@ -157,9 +155,7 @@ const files = {
       <div id="main"></div>
     </div>
     <script>
-      const FS = window.top.FS;
       let current = '/home';
-
       let main = document.getElementById('main');
 
       function showTop() {
@@ -167,18 +163,22 @@ const files = {
       }
       showTop();
 
-      function traverse(o, n, l) {
-        let inner = Object.keys(o).map(p=>{
-          if (p.includes('.')) return '';
-          return traverse(o[p], p, l+'/'+p);
-        }).join('');
-        if (inner.length<1) return '<button onclick="current=\`' + (l.length?l:'') + '\`;showTop();showContents();">' + n + '</button>';
-        return '<details><summary><button onclick="current=\`' + (l.length?l:'') + '\`;showTop();showContents();">' + n + '</button></summary>' + inner + '</details>';
+      function traverse(path, set=false) {
+        window.FS.get(path).then(data=>{
+          data = data
+            .filter(subpath=>!subpath.includes('.'))
+            .map(subpath=>traverse(path+(path!=='/'?'/':'')+subpath));
+          let n = path.split('/').slice(-1)[0];
+          let in = \`<button onclick="current='\${path}';showTop();showContents();">\${n.length?n:'/'}</button>\`;
+          if (data.length) in = '<details><summary>'+in+'</summary>'+data.join('')+'</details>';
+          if (!set) return in;
+          document.getElementById('folders').innerHTML = in;
+        });
       }
-      document.getElementById('folders').innerHTML = traverse(FS.tree, '/', '');
+      traverse('/', true);
       function entryClick(f) {
         if (f.includes('.')) {
-          window.top.openfile(current+'/'+f);
+          window.openFile(current+'/'+f);
         } else {
           current += '/'+f;
           showTop();
@@ -186,10 +186,12 @@ const files = {
         }
       }
       function showContents() {
-        main.innerHTML = FS.get(current)
-          .toSorted((a,b)=>b.includes('.')^a.includes('.')?a.includes('.')-b.includes('.'):a.localeCompare(b))
-          .map(f=>\`<button onclick="entryClick('\${f}')">\${f.includes('.')?'':'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M0 39C0 27.9543 8.95431 19 20 19H98.4851C103.925 19 109.131 21.2163 112.902 25.1378L126.098 38.8622C129.869 42.7837 135.075 45 140.515 45H236C247.046 45 256 53.9543 256 65V217C256 228.046 247.046 237 236 237H20C8.95431 237 0 228.046 0 217V39Z"/></svg> '}\${f}</button>\`)
-          .join('');
+        window.FS.get(current).then(data=>{
+          main.innerHTML = data
+            .toSorted((a,b)=>b.includes('.')^a.includes('.')?a.includes('.')-b.includes('.'):a.localeCompare(b))
+            .map(f=>\`<button onclick="entryClick('\${f}')">\${f.includes('.')?'':'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M0 39C0 27.9543 8.95431 19 20 19H98.4851C103.925 19 109.131 21.2163 112.902 25.1378L126.098 38.8622C129.869 42.7837 135.075 45 140.515 45H236C247.046 45 256 53.9543 256 65V217C256 228.046 247.046 237 236 237H20C8.95431 237 0 228.046 0 217V39Z"/></svg> '}\${f}</button>\`)
+            .join('');
+        });
       }
       showContents();
 
@@ -201,9 +203,8 @@ const files = {
         input.setSelectionRange(0, input.value.indexOf('.'));
         let createFile = async()=>{
           let path = current+'/'+input.value;
-          FS.create(path);
+          await window.FS.create(path);
           if (val&&path.includes('.')) {
-            window.top.hgj = val;
             let con;
             if (val.type.startsWith('text/')) {
               con = await val.text();
@@ -211,7 +212,7 @@ const files = {
               con = await val.arrayBuffer();
               con = new Blob([con], { type: val.type });
             }
-            FS.set(path, con);
+            await window.FS.set(path, con);
           }
           showContents();
         };
@@ -333,44 +334,45 @@ Syntax Example Description
       </div>
     </main>
     <script>
-      const FS = window.top.FS;
       let rows = document.getElementById('rows');
       let cols = document.getElementById('cols');
       let type = document.getElementById('bg-type');
       let val = document.getElementById('bg-val');
       let time = document.getElementById('time');
-      let data = JSON.parse(FS.get('@/desktop.json'));
-      rows.value = data.desktop.rows;
-      cols.value = data.desktop.columns;
-      type.value = data.background.type;
-      val.setAttribute('type', type.value==='color'?'color':'text');
-      val.value = data.background.value;
-      time.value = data.time.replaceAll('\\n','\\\\n');
-      let debounce;
-      function update() {
-        if (debounce) clearTimeout(debounce);
-        debounce = setTimeout(()=>{
-          debounce = null;
-          FS.set('@/desktop.json', JSON.stringify(data));
-        }, 200);
-      }
-      rows.onchange = cols.onchange = ()=>{
-        data.desktop.rows = rows.value;
-        data.desktop.columns = cols.value;
-        update();
-      };
-      type.onchange = ()=>{
+      window.FS.get('@/desktop.json').then(data=>{
+        data = JSON.parse(data);
+        rows.value = data.desktop.rows;
+        cols.value = data.desktop.columns;
+        type.value = data.background.type;
         val.setAttribute('type', type.value==='color'?'color':'text');
-      };
-      val.onchange = val.oninput = ()=>{
-        data.background.type = type.value;
-        data.background.value = val.value;
-        update();
-      };
-      time.onchange = ()=>{
-        data.time = time.value.replaceAll('\\\\n','\\n');
-        update();
-      };
+        val.value = data.background.value;
+        time.value = data.time.replaceAll('\\n','\\\\n');
+        let debounce;
+        function update() {
+          if (debounce) clearTimeout(debounce);
+          debounce = setTimeout(()=>{
+            debounce = null;
+            window.FS.set('@/desktop.json', JSON.stringify(data));
+          }, 200);
+        }
+        rows.onchange = cols.onchange = ()=>{
+          data.desktop.rows = rows.value;
+          data.desktop.columns = cols.value;
+          update();
+        };
+        type.onchange = ()=>{
+          val.setAttribute('type', type.value==='color'?'color':'text');
+        };
+        val.onchange = val.oninput = ()=>{
+          data.background.type = type.value;
+          data.background.value = val.value;
+          update();
+        };
+        time.onchange = ()=>{
+          data.time = time.value.replaceAll('\\\\n','\\n');
+          update();
+        };
+      });
     </script>
   </body>
 </html>`
@@ -419,12 +421,11 @@ const terminal = {
     <span></span>
     <input autocapitalize="off" name="command">
     <script>
-      window.top.consoleprint=(text, error)=>{
-        if(error){console.error(text)}else{console.log(text)};
+      window.consoleprint=(text, error)=>{
         document.querySelector('span').innerHTML += '<span'+(error?' class="err">':'>')+text.toString().replaceAll('<','&lt;')+'</span>';
         document.querySelector('span').scrollTop = document.querySelector('span').scrollHeight;
       }
-      window.top.consoleclear=(text)=>{
+      window.consoleclear=(text)=>{
         Array.from(document.querySelectorAll('span span:not(.e)')).forEach(e=>e.remove());
       }
       let io = document.querySelector('input');
@@ -433,9 +434,9 @@ const terminal = {
       io.onkeyup=(evt)=>{
         if (evt.key === 'Enter') {
           io.value = io.value.trim();
-          window.top.consoleprint('> '+io.value);
+          window.consoleprint('> '+io.value, false);
           if (io.value==='') return;
-          window.top.fshrunhook(io.value);
+          window.runCommand(io.value);
           last = io.value;
           io.value = '';
         } else if (evt.key === 'ArrowUp') {
