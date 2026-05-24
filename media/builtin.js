@@ -116,10 +116,10 @@ export const _desktop = `{
 }`;
 export const _permissions = `{
   "unsandboxed": [],
-  "protected": ["#/tty.js", "#/fsh.js", "#/dt.js", "@/permissions.json"],
+  "protected": ["/bin/tty.js", "/bin/fsh.js", "/bin/dt.js", "/config/permissions.json"],
 
   "fs": ["notepad", "files", "config"],
-  "permissions": ["config"],
+  "fs_protected": ["notepad", "config"],
   "commands": ["terminal"]
 }`;
 export const _openers = `{
@@ -548,7 +548,7 @@ button {
         window.openfile(evt.data.path);
       } else if (type==='fs'&&permissions.fs.includes(id)) {
         if (!['get','set','create','delete'].includes(evt.data.action)) return;
-        if (permissions.protected.includes(FS.abs(evt.data.path))&&!(FS.abs(evt.data.path)==='/config/permissions.json'&&permissions.permissions.includes(id))) return;
+        if (permissions.protected.includes(FS.abs(evt.data.path))&&!permissions.fs_protected.includes(id)) return;
         let args = [evt.data.path];
         if (evt.data.action==='set') args.push(evt.data.data);
         let h = FS[evt.data.action](...args);
