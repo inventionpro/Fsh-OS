@@ -120,7 +120,9 @@ export const _permissions = `{
 
   "fs": ["files", "notepad", "viewer", "config"],
   "fs_protected": ["notepad", "config"],
-  "commands": ["terminal"]
+  "commands": ["terminal"],
+  "usermedia": [],
+  "geolocation": []
 }`;
 export const _openers = `{
   "@": ["notepad", "viewer"],
@@ -254,8 +256,9 @@ dialog {
   flex-direction: column;
 }
 #search button {
-  text-align: left;
-  margin: 2px 0px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
   padding: 5px;
   background: none;
 }
@@ -557,12 +560,16 @@ button {
   let permissions = JSON.parse(FS.get('@/permissions.json'));
   if (!permissions.unsandboxed.includes(id)) {
     iframe.setAttribute('sandbox', 'allow-downloads allow-modals allow-pointer-lock allow-presentation allow-scripts');
-    iframe.setAttribute('allow', 'autoplay=(self) bluetooth=(self) camera=(self) captured-surface-control=(self) compute-pressure=(self) cross-origin-isolated=(self) deferred-fetch=(self) deferred-fetch-minimal=(self) display-capture=(self) encrypted-media=(self) fullscreen=(self) gamepad=(self) hid=(self) local-fonts=(self) microphone=(self) midi=(self) picture-in-picture=(self) screen-wake-lock=(self) serial=(self) usb=(self) web-share=(self) xr-spatial-tracking=(self) accelerometer=() ambient-light-sensor=() attribution-reporting=() browsing-topics=() ch-ua-high-entropy-values=() geolocation=() gyroscope=() identity-credentials-get=() idle-detection=() local-network=() local-network-access=() loopback-network=() magnetometer=() on-device-speech-recognition=() otp-credentials=() payment=() private-state-token-issuance=() private-state-token-redemption=() publickey-credentials-create=() publickey-credentials-get=() storage-access=() summarizer=() window-management=()');
+    let geolocation = permissions.geolocation.includes(id)?'geolocation=(self) ':'geolocation=() ';
+    let usermedia = permissions.usermedia.includes(id)?'camera=(self) microphone=(self) ':'camera=() microphone=() ';
+    iframe.setAttribute('allow', usermedia+geolocation+'autoplay=(self) bluetooth=(self) captured-surface-control=(self) compute-pressure=(self) cross-origin-isolated=(self) deferred-fetch=(self) deferred-fetch-minimal=(self) display-capture=(self) encrypted-media=(self) fullscreen=(self) gamepad=(self) hid=(self) local-fonts=(self) midi=(self) picture-in-picture=(self) screen-wake-lock=(self) serial=(self) usb=(self) web-share=(self) xr-spatial-tracking=(self) accelerometer=() ambient-light-sensor=() attribution-reporting=() browsing-topics=() ch-ua-high-entropy-values=() gyroscope=() identity-credentials-get=() idle-detection=() local-network=() local-network-access=() loopback-network=() magnetometer=() on-device-speech-recognition=() otp-credentials=() payment=() private-state-token-issuance=() private-state-token-redemption=() publickey-credentials-create=() publickey-credentials-get=() storage-access=() summarizer=() window-management=()');
     function handler(evt) {
       if (evt.source!==iframe.contentWindow) return;
       if (!evt.data||!evt.data.type) return;
       let type = evt.data.type;
-      if (type==='openFile') {
+      if (type==='close') {
+        window.closeapp(processid);
+      } else if (type==='openFile') {
         window.openfile(evt.data.path);
       } else if (type==='fs'&&permissions.fs.includes(id)) {
         if (!['get','set','create','delete'].includes(evt.data.action)) return;
@@ -613,6 +620,9 @@ button {
       type: 'openFile',
       path: path
     }, '*');
+  };
+  window.close = ()=>{
+    window.top.postMessage({ type: 'close' }, '*');
   };
   window.runCommand = (cmd)=>{
     window.top.postMessage({
@@ -715,7 +725,8 @@ window.setSearch = ()=>{
     let query = document.querySelector('#search input').value.toLowerCase();
     document.querySelector('#search div').innerHTML = apps
       .filter(app=>app.name.toLowerCase().includes(query))
-      .map(app=>'<button onclick="window.openApp(\\''+app.id+'\\');document.getElementById(\\'search\\').style.display=\\'none\\'">'+app.name+'</button>')
+      .toSorted((a,b)=>a.name.localeCompare(b.name))
+      .map(app=>\`<button onclick="window.openApp('\${app.id}');document.getElementById('search').style.display='none'"><img src="\${app.icon}" width="20" height="20" loading="lazy">\${app.name}</button>\`)
       .join('');
   };
   document.querySelector('#search input').oninput();
