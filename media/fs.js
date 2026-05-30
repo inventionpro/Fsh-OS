@@ -71,25 +71,7 @@ export class fs {
   }
   _nav(path, create, secondary='', content='') {
     let file = this.tree;
-    let seg = path.split('/');
-    switch(seg.shift()) {
-      case '':
-        break;
-      case '@':
-        if (!file.config) throw new Error('Missing directory/file: config from /config');
-        file = file.config;
-        break;
-      case '~':
-        if (!file.home) throw new Error('Missing directory/file: home from /home');
-        file = file.home;
-        break;
-      case '#':
-        if (!file.bin) throw new Error('Missing directory/file: bin from /bin');
-        file = file.bin;
-        break;
-      default:
-        throw new Error('Unknown fs start: '+seg[0]);
-    }
+    let seg = this.abs(path).split('/');
     if (seg.length===1&&seg[0]==='') seg.shift();
     let parent, k = null;
     seg.forEach((s,i)=>{
@@ -116,7 +98,9 @@ export class fs {
     return file;
   }
   abs(path) {
-    return path.replace(/^@\//,'/config/').replace(/^~\//,'/home/').replace(/^#\//,'/bin/');
+    return path
+      .replace(/^@\//,'/config/').replace(/^~\//,'/home/').replace(/^#\//,'/bin/')
+      .replaceAll(' ','_');
   }
   get(path) {
     return this._nav(path, false);
