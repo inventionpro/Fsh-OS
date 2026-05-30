@@ -573,7 +573,11 @@ button {
         window.openfile(evt.data.path);
       } else if (type==='fs'&&permissions.fs.includes(id)) {
         if (!['get','set','create','delete'].includes(evt.data.action)) return;
-        if (permissions.protected.includes(FS.abs(evt.data.path))&&!permissions.fs_protected.includes(id)) return;
+        if (!permissions.fs_protected.includes(id)) {
+          let abspath = FS.abs(evt.data.path);
+          if (permissions.protected.includes(abspath)) return;
+          if ((/\\/bin\\/apps\\/[^/]*?\\.app/).test(abspath)&&permissions.fs_protected.includes(abspath.match(/apps\\/([^\\/]*?)\\.app/)[1])) return;
+        };
         let args = [evt.data.path];
         if (evt.data.action==='set') args.push(evt.data.data);
         let h = FS[evt.data.action](...args);
