@@ -560,9 +560,9 @@ button {
   let permissions = JSON.parse(FS.get('@/permissions.json'));
   if (!permissions.unsandboxed.includes(id)) {
     iframe.setAttribute('sandbox', 'allow-downloads allow-modals allow-pointer-lock allow-presentation allow-scripts');
-    let geolocation = permissions.geolocation.includes(id)?'geolocation=(self) ':'geolocation=() ';
-    let usermedia = permissions.usermedia.includes(id)?'camera=(self) microphone=(self) ':'camera=() microphone=() ';
-    iframe.setAttribute('allow', usermedia+geolocation+'autoplay=(self) bluetooth=(self) captured-surface-control=(self) compute-pressure=(self) cross-origin-isolated=(self) deferred-fetch=(self) deferred-fetch-minimal=(self) display-capture=(self) encrypted-media=(self) fullscreen=(self) gamepad=(self) hid=(self) local-fonts=(self) midi=(self) picture-in-picture=(self) screen-wake-lock=(self) serial=(self) usb=(self) web-share=(self) xr-spatial-tracking=(self) accelerometer=() ambient-light-sensor=() attribution-reporting=() browsing-topics=() ch-ua-high-entropy-values=() gyroscope=() identity-credentials-get=() idle-detection=() local-network=() local-network-access=() loopback-network=() magnetometer=() on-device-speech-recognition=() otp-credentials=() payment=() private-state-token-issuance=() private-state-token-redemption=() publickey-credentials-create=() publickey-credentials-get=() storage-access=() summarizer=() window-management=()');
+    let geolocation = permissions.geolocation.includes(id)?'geolocation; ':"geolocation 'none'; ";
+    let usermedia = permissions.usermedia.includes(id)?'camera; microphone; ':"camera 'none'; microphone 'none'; ";
+    iframe.setAttribute('allow', usermedia+geolocation+"autoplay; bluetooth; captured-surface-control; compute-pressure; cross-origin-isolated; deferred-fetch; deferred-fetch-minimal; display-capture; encrypted-media; fullscreen; gamepad; hid; local-fonts; midi; picture-in-picture; screen-wake-lock; serial; usb; web-share; xr-spatial-tracking; accelerometer 'none'; ambient-light-sensor 'none'; attribution-reporting 'none'; browsing-topics 'none'; ch-ua-high-entropy-values 'none'; gyroscope 'none'; identity-credentials-get 'none'; idle-detection 'none'; local-network 'none'; local-network-access 'none'; loopback-network 'none'; magnetometer 'none'; on-device-speech-recognition 'none'; otp-credentials 'none'; payment 'none'; private-state-token-issuance 'none'; private-state-token-redemption 'none'; publickey-credentials-create 'none'; publickey-credentials-get 'none'; storage-access 'none'; summarizer 'none'; window-management 'none'");
     function handler(evt) {
       if (evt.source!==iframe.contentWindow) return;
       if (!evt.data||!evt.data.type) return;
@@ -574,13 +574,13 @@ button {
       } else if (type==='fs'&&permissions.fs.includes(id)) {
         if (!['get','set','create','delete'].includes(evt.data.action)) return;
         if (!permissions.fs_protected.includes(id)) {
-          let abspath = FS.abs(evt.data.path);
+          let abspath = window.FS.abs(evt.data.path);
           if (permissions.protected.includes(abspath)) return;
           if ((/\\/bin\\/apps\\/[^/]*?\\.app/).test(abspath)&&permissions.fs_protected.includes(abspath.match(/apps\\/([^\\/]*?)\\.app/)[1])) return;
         };
         let args = [evt.data.path];
         if (evt.data.action==='set') args.push(evt.data.data);
-        let h = FS[evt.data.action](...args);
+        let h = window.FS[evt.data.action](...args);
         let response = {
           type: 'fs',
           action: evt.data.action,
@@ -723,7 +723,7 @@ window.setSearch = ()=>{
   };
   document.querySelector('#search input').oninput = (evt)=>{
     if (JSON.stringify(appindex)!==JSON.stringify(FS.get('#/apps'))) {
-      appindex = FS.get('#/apps');
+      appindex = window.FS.get('#/apps');
       apps = appindex.map(app=>JSON.parse(FS.get('#/apps/'+app)));
     }
     let query = document.querySelector('#search input').value.toLowerCase();
@@ -810,7 +810,7 @@ export const js = `if (!args[0]) {
   window.consoleprint('Must pass path', true);
 } else {
   try {
-    let file = FS.get(args[0]);
+    let file = window.FS.get(args[0]);
     if (Array.isArray(file)) throw new Error('Cannot be directory');
     eval(file);
   } catch(err) {
@@ -840,7 +840,7 @@ export const tree = `if (!args[0]) {
     file.onchange = ()=>{
       const reader = new FileReader();
       reader.onload = ()=>{
-        FS.tree = JSON.parse(reader.result);
+        window.FS.tree = JSON.parse(reader.result);
         file.remove();
       };
       reader.readAsText(file.files[0], 'UTF-8');
@@ -854,7 +854,7 @@ export const tree = `if (!args[0]) {
 export const view = `let v = '/';
 if (args[0]) v = args[0];
 try {
-  let ff = FS.get(v);
+  let ff = window.FS.get(v);
   if (Array.isArray(ff)) {
     ff = ff.map(f=>'| '+f).join('\\n');
   }
@@ -868,7 +868,7 @@ export const make = `if (!args[0]) {
   window.consoleprint('Must pass path', true);
 } else {
   try {
-    FS.create(args[0]);
+    window.FS.create(args[0]);
     window.consoleprint('created '+args[0]);
   } catch(err) {
     window.consoleprint(err, true);
@@ -881,11 +881,11 @@ export const edit = `if (!args[0]) {
   let file = '';
   let run = true;
   try {
-    file = FS.get(args[0]);
+    file = window.FS.get(args[0]);
     if (Array.isArray(file)) throw new Error('Cannot be directory');
   } catch(err) {
     if (err.message.includes('Missing directory/file')) {
-      FS.create(args[0]);
+      window.FS.create(args[0]);
       file = ''
     } else {
       window.consoleprint(err.message, true);
@@ -903,15 +903,15 @@ export const move = `if (!args[0] || !args[1]) {
   window.consoleprint('Must pass two paths', true);
 } else {
   try {
-    let one = FS.get(args[0]);
-    let two = FS.get(args[1]);
+    let one = window.FS.get(args[0]);
+    let two = window.FS.get(args[1]);
     if (!Array.isArray(two)) window.consoleprint('Destination must be a folder', true);
     if (Array.isArray(one)) {
       window.consoleprint('Uhhh, moving folders unfinished :D');
     } else {
-      FS.create(args[1]+'/'+args[0].split('/').slice(-1)[0]);
-      FS.set(args[1]+'/'+args[0].split('/').slice(-1)[0], one);
-      FS.delete(args[0]);
+      window.FS.create(args[1]+'/'+args[0].split('/').slice(-1)[0]);
+      window.FS.set(args[1]+'/'+args[0].split('/').slice(-1)[0], one);
+      window.FS.delete(args[0]);
       window.consoleprint('Moved '+args[0]+' to '+args[1]);
     }
   } catch(err) {
@@ -923,7 +923,7 @@ export const del = `if (!args[0]) {
   window.consoleprint('Must pass path', true);
 } else {
   try {
-    FS.delete(args[0]);
+    window.FS.delete(args[0]);
     window.consoleprint('deleted '+args[0]);
   } catch(err) {
     window.consoleprint(err, true);
