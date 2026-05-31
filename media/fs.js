@@ -72,7 +72,7 @@ export class fs {
   _nav(path, create, secondary='', content='') {
     let file = this.tree;
     let seg = this.abs(path).split('/');
-    if (seg.length===1&&seg[0]==='') seg.shift();
+    seg.shift();
     let parent, k = null;
     seg.forEach((s,i)=>{
       if (typeof file[s]==='undefined') {
@@ -100,6 +100,7 @@ export class fs {
   abs(path) {
     return path
       .replace(/^@\//,'/config/').replace(/^~\//,'/home/').replace(/^#\//,'/bin/')
+      .replace(/([^^])\/$/, '$1')
       .replaceAll(' ','_');
   }
   get(path) {
