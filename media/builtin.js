@@ -411,6 +411,13 @@ window.openApp = (id, attributes={})=>{
   <button onclick="closeapp('\${processid}')">X</button>
 </div>
 <iframe></iframe>\`;
+  let iframe = app.querySelector('iframe');
+  // Z index
+  let moveToTop = ()=>{
+    if (window.topAppZ!=app.style.zIndex) app.style.zIndex = ++window.topAppZ;
+  };
+  app.moveToTop = moveToTop;
+  app.addEventListener('focusin', moveToTop);
   // Size + Position
   app.style.left = window.innerWidth/2-200 + 'px';
   app.style.top = window.innerHeight/2-125 + 'px';
@@ -421,6 +428,7 @@ window.openApp = (id, attributes={})=>{
   let moving = false;
   app.onpointerdown = (evt)=>{
     if (moving) return;
+    moveToTop();
     const rect = app.getBoundingClientRect();
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
@@ -500,7 +508,7 @@ window.openApp = (id, attributes={})=>{
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
   header.onpointerdown = (e)=>{
     if (e.target.tagName==='BUTTON') return;
-    if (window.topAppZ!=app.style.zIndex) app.style.zIndex = ++window.topAppZ;
+    moveToTop();
     moving = true;
     header.setPointerCapture(e.pointerId);
     pos3 = e.clientX;
@@ -522,7 +530,6 @@ window.openApp = (id, attributes={})=>{
     };
   };
   // Inner
-  let iframe = app.querySelector('iframe');
   window.openapps[window.openapps.findIndex(app=>app.pid===processid)].iframe = iframe;
   let prepend = \`<script>
   window.startAttributes = \${JSON.stringify(attributes||{})};
@@ -648,6 +655,11 @@ button {
   }
   iframe.setAttribute('srcdoc', prepend+info.html);
 }
+window.onblur = ()=>{
+  setTimeout(()=>{
+    if (document.activeElement.tagName==='IFRAME') document.activeElement.parentElement.moveToTop();
+  }, 0);
+};
 window.closeapp = (id)=>{
   document.getElementById('a-'+id).remove();
   let handler = window.openapps.find(app=>app.pid===id).handler;
