@@ -100,7 +100,7 @@ export class fs {
   abs(path) {
     return path
       .replace(/^@\//,'/config/').replace(/^~\//,'/home/').replace(/^#\//,'/bin/')
-      .replace(/([^^])\/$/, '$1')
+      .replace(/\/$/, '')
       .replaceAll(' ','_');
   }
   get(path) {
