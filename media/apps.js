@@ -348,11 +348,24 @@ const config = {
       .small {
         font-size: 75%;
       }
+      details {
+        width: fit-content;
+      }
+      [data-tab="openers"] button, [data-tab="perms"] button {
+        width: fit-content;
+      }
+      [data-tab="openers"] button:not(.add):hover, [data-tab="perms"] button:not(.add):hover {
+        text-decoration: line-through;
+        text-decoration-color: #d22d;
+        text-decoration-thickness: 2px;
+      }
     </style>
   </head>
   <body>
     <side>
       <button data-tab="style">Appearance</button>
+      <button data-tab="openers">Openers</button>
+      <button data-tab="perms">Permissions</button>
     </side>
     <main>
       <div data-tab="style">
@@ -393,8 +406,17 @@ Syntax Example Description
 %y      26     Year (2-digit)</pre>
         </details>
       </div>
+      <div data-tab="openers" style="display:none"></div>
+      <div data-tab="perms" style="display:none"></div>
     </main>
     <script>
+      document.querySelectorAll('button[data-tab]').forEach(btn=>{
+        btn.onclick = ()=>{
+          document.querySelectorAll('div[data-tab]').forEach(page=>page.style.display='none');
+          document.querySelector('div[data-tab="'+btn.getAttribute('data-tab')+'"]').style.display = '';
+        };
+      });
+      // Style
       let rows = document.getElementById('rows');
       let cols = document.getElementById('cols');
       let type = document.getElementById('bg-type');
@@ -434,6 +456,61 @@ Syntax Example Description
           update();
         };
       });
+      // Openers
+      window.removeOpener = (type, app)=>{
+        FS.get('@/openers.json').then(data=>{
+          data = JSON.parse(data);
+          data[type] = data[type].filter(ap=>ap!==app);
+          if (data[type].length<1&&type!=='@') delete data[type];
+          FS.set('@/openers.json', JSON.stringify(data)).then(window.showOpener);
+        });
+      };
+      window.addOpener = (type)=>{
+        FS.get('@/openers.json').then(data=>{
+          data = JSON.parse(data);
+          data[type].push(prompt('App id'));
+          FS.set('@/openers.json', JSON.stringify(data)).then(window.showOpener);
+        });
+      };
+      window.showOpener = ()=>{
+        FS.get('@/openers.json').then(data=>{
+          data = JSON.parse(data);
+          document.querySelector('div[data-tab="openers"]').innerHTML = Object.entries(data)
+            .map(open=>\`<details><summary>\${open[0]==='@'?'Default':open[0]}<button class="add" onclick="window.addOpener('\${open[0]}')">+</button></summary>\${open[1].map(app=>\`<button onclick="window.removeOpener('\${open[0]}','\${app}')">\${app}</button>\`).join('')}</details>\`)
+            .join('');
+        });
+      };
+      window.showOpener();
+      // Perms
+      window.removePerm = (type, app)=>{
+        FS.get('@/permissions.json').then(data=>{
+          data = JSON.parse(data);
+          data[type] = data[type].filter(ap=>ap!==app);
+          FS.set('@/permissions.json', JSON.stringify(data)).then(window.showPerm);
+        });
+      };
+      window.addPerm = (type)=>{
+        FS.get('@/permissions.json').then(data=>{
+          data = JSON.parse(data);
+          let val;
+          if (type==='protected') {
+            val = FS.abs(prompt('Path'));
+          } else {
+            val = prompt('App id');
+          }
+          data[type].push(val);
+          FS.set('@/permissions.json', JSON.stringify(data)).then(window.showPerm);
+        });
+      };
+      window.showPerm = ()=>{
+        FS.get('@/permissions.json').then(data=>{
+          data = JSON.parse(data);
+          document.querySelector('div[data-tab="perms"]').innerHTML = Object.entries(data)
+            .map(perm=>\`<details><summary>\${perm[0]}<button class="add" onclick="window.addPerm('\${perm[0]}')">+</button></summary>\${perm[1].map(app=>\`<button onclick="window.removePerm('\${perm[0]}','\${app}')">\${app}</button>\`).join('')}</details>\`)
+            .join('');
+        });
+      };
+      window.showPerm();
     </script>
   </body>
 </html>`
