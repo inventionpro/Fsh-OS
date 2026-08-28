@@ -24,6 +24,11 @@ export class fs {
     this.binary_signal = Symbol('Binary');
     this.tree = {
       config: {
+        backgrounds: {
+          'squares.png': this.binary_signal,
+          'lake.jpg': this.binary_signal,
+          'forest.jpg': this.binary_signal
+        },
         'desktop.json': _desktop,
         'permissions.json': _permissions,
         'openers.json': _openers
@@ -33,8 +38,7 @@ export class fs {
         documents: {},
         media: {},
         video: {},
-        music: {},
-        'default_background.png': this.binary_signal
+        music: {}
       },
       bin: {
         apps: default_apps,
