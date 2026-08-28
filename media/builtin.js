@@ -89,7 +89,7 @@ consoleprint('Running tty mode');`;
 export const _desktop = `{
   "background": {
     "type": "file",
-    "value": "~/default_background.png"
+    "value": "@/backgrounds/squares.png"
   },
   "desktop": {
     "rows": 8,
