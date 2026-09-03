@@ -92,8 +92,8 @@ export const _desktop = `{
     "value": "@/backgrounds/squares.png"
   },
   "desktop": {
-    "rows": 8,
-    "columns": 15,
+    "rows": 9,
+    "columns": 20,
     "apps": [
       {
         "id": "notepad",
@@ -112,7 +112,12 @@ export const _desktop = `{
       }
     ]
   },
-  "time": "%k:%M:%S\\n%d/%m/%Y"
+  "bar": {
+    "detached": false,
+    "top": false,
+    "time": true,
+    "timeString": "%k:%M:%S\\n%d/%m/%Y"
+  }
 }`;
 export const _permissions = `{
   "unsandboxed": [],
@@ -203,17 +208,33 @@ dialog {
   width: 100dvw;
   height: 95dvh;
 }
+[data-bar-detached="true"] #desktop {
+  height: calc(95dvh - 30px);
+}
+[data-bar-top="true"] #desktop {
+  margin-top: 5dvh;
+}
+[data-bar-detached="true"][data-bar-top="true"] #desktop {
+  margin-top: calc(5dvh + 30px);
+}
 #bar {
   position: absolute;
   right: 0px;
   bottom: 0px;
   left: 0px;
   display: flex;
-  width: 100dvw;
   height: 5dvh;
   background: #0004;
   backdrop-filter: blur(10px);
   z-index: 9999999999999;
+}
+[data-bar-detached="true"] #bar {
+  margin: 15px;
+  border-radius: 0.5rem;
+}
+[data-bar-top="true"] #bar {
+  bottom: unset;
+  top: 0px;
 }
 #bar > button {
   min-width: 5dvh;
@@ -236,9 +257,20 @@ dialog {
   height: 30dvh;
   padding: 10px;
   border-radius: 0 1rem 0 0;
-  background: #0006;
+  background: #0004;
   backdrop-filter: blur(10px);
   box-sizing: border-box;
+}
+[data-bar-detached="true"] #search {
+  border-radius: 1rem 1rem 0 0;
+}
+[data-bar-top="true"] #search {
+  bottom: unset;
+  top: 5dvh;
+  border-radius: 0 0 1rem;
+}
+[data-bar-detached="true"][data-bar-top="true"] #search {
+  border-radius: 0 0 1em 1em;
 }
 #search input {
   width: 100%;
@@ -248,7 +280,7 @@ dialog {
   padding: 4px 6px;
   border: none;
   border-radius: 0.5rem;
-  background: #fff1;
+  background: #0008;
   box-sizing: border-box;
 }
 #search div {
@@ -755,41 +787,50 @@ window.showOpenApps = ()=>{
 window.lastDesktop = '';
 window.lastBackground = '';
 window.lastBackgroundURL = '';
-window.setBackground = ()=>{
+window.lastBarOptions = '';
+window.updateDesktop = ()=>{
   let desktop = JSON.parse(FS.get('@/desktop.json'));
+  let app = document.getElementById('app');
+
   if (window.lastDesktop!==desktop.desktop.rows+'-'+desktop.desktop.columns) {
     window.lastDesktop = desktop.desktop.rows+'-'+desktop.desktop.columns;
     window.setDesktop();
   }
+
   let bg = desktop.background;
-  if (window.lastBackground===bg.value) return;
-  window.lastBackground = bg.value;
-  if (window.lastBackgroundURL) {
-    URL.revokeObjectURL(window.lastBackgroundURL);
-    window.lastBackgroundURL = '';
+  if (window.lastBackground!==bg.value) {
+    window.lastBackground = bg.value;
+    if (window.lastBackgroundURL) {
+      URL.revokeObjectURL(window.lastBackgroundURL);
+      window.lastBackgroundURL = '';
+    }
+    switch (bg.type) {
+      case 'color':
+        if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) throw new Error('Invalid color');
+        app.style.background = bg.value;
+        app.style.setProperty('--bg', bg.value);
+        break;
+      case 'url':
+        if (!(new RegExp('^https?:\\/\\/(www.)?[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_+.~#?&\\\\/\\\\/=]*)$|^data:[\\\\w\\\\/+.-]+;\\\\w+,.*$', 'mi')).test(bg.value)) throw new Error('Invalid url');
+        app.style.background = 'url('+bg.value+') center / cover no-repeat';
+        app.style.setProperty('--bg', '#181818');
+        break;
+      case 'file':
+        window.lastBackgroundURL = URL.createObjectURL(FS.get(bg.value));
+        app.style.background = 'url('+window.lastBackgroundURL+') center / cover no-repeat';
+        app.style.setProperty('--bg', '#181818');
+        break;
+    }
   }
-  switch (bg.type) {
-    case 'color':
-      if (!(/^#[0-9a-fA-F]{3,6}$/).test(bg.value)) throw new Error('Invalid color');
-      document.getElementById('app').style.background = bg.value;
-      document.getElementById('app').style.setProperty('--bg', bg.value);
-      break;
-    case 'url':
-      if (!(new RegExp('^https?:\\/\\/(www.)?[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_+.~#?&\\\\/\\\\/=]*)$|^data:[\\\\w\\\\/+.-]+;\\\\w+,.*$', 'mi')).test(bg.value)) throw new Error('Invalid url');
-      document.getElementById('app').style.background = 'url('+bg.value+') center / cover no-repeat';
-      document.getElementById('app').style.setProperty('--bg', '#181818');
-      break;
-    case 'file':
-      window.lastBackgroundURL = URL.createObjectURL(FS.get(bg.value));
-      document.getElementById('app').style.background = 'url('+window.lastBackgroundURL+') center / cover no-repeat';
-      document.getElementById('app').style.setProperty('--bg', '#181818');
-      break;
+
+  if (window.lastBarOptions!==desktop.bar.detached+'-'+desktop.bar.top) {
+    window.lastBarOptions = desktop.bar.detached+'-'+desktop.bar.top;
+    app.setAttribute('data-bar-detached', desktop.bar.detached);
+    app.setAttribute('data-bar-top', desktop.bar.top);
   }
-}
-window.setTime = ()=>{
-  let time = JSON.parse(FS.get('@/desktop.json')).time;
+
   let date = new Date();
-  document.getElementById('time').innerText = time
+  document.getElementById('time').innerText = desktop.bar.timeString
     .replaceAll('%H',date.getHours().toString().padStart(2, '0'))
     .replaceAll('%k',date.getHours())
     .replaceAll('%I',(date.getHours()?date.getHours()%12:12).toString().padStart(2, '0'))
@@ -810,11 +851,9 @@ window.setTime = ()=>{
 /* Updates */
 window.setDesktop();
 window.setSearch();
-window.setBackground();
-window.setTime();
+window.updateDesktop();
 window.interval = setInterval(()=>{
-  window.setBackground();
-  window.setTime();
+  window.updateDesktop();
 }, 400);
 window.consoleprint('Loaded desktop');`;
 
