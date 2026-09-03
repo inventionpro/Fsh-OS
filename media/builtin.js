@@ -115,6 +115,7 @@ export const _desktop = `{
   "bar": {
     "detached": false,
     "top": false,
+    "battery": false,
     "time": true,
     "timeString": "%k:%M:%S\\n%d/%m/%Y"
   }
@@ -331,6 +332,7 @@ dialog {
 .app span {
   display: block;
   height: 20px;
+  text-shadow: 0px 0px 3px #000a;
   text-align: center;
   text-overflow: ellipsis;
   overflow: hidden;
