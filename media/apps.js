@@ -466,9 +466,11 @@ Syntax Example Description
         });
       };
       window.addOpener = (type)=>{
+        let op = prompt('App id');
+        if (!op) return;
         FS.get('@/openers.json').then(data=>{
           data = JSON.parse(data);
-          data[type].push(prompt('App id'));
+          data[type].push(op);
           FS.set('@/openers.json', JSON.stringify(data)).then(window.showOpener);
         });
       };
@@ -498,6 +500,7 @@ Syntax Example Description
           } else {
             val = prompt('App id');
           }
+          if (!val) return;
           data[type].push(val);
           FS.set('@/permissions.json', JSON.stringify(data)).then(window.showPerm);
         });
