@@ -26,6 +26,7 @@ export class fs {
       config: {
         backgrounds: {
           'squares.png': this.binary_signal,
+          'cubes.png': this.binary_signal,
           'lake.jpg': this.binary_signal,
           'forest.jpg': this.binary_signal
         },
